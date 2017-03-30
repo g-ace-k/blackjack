@@ -1,0 +1,50 @@
+{
+  "project_info": {
+    "project_number": "879516809073",
+    "firebase_url": "https://blackjack-92d31.firebaseio.com",
+    "project_id": "blackjack-92d31",
+    "storage_bucket": "blackjack-92d31.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879516809073:android:f297c91c634b7ccd",
+        "android_client_info": {
+          "package_name": "com.mikegacek.blackjack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "879516809073-o6ocqvp3c5t8rpdfui91fmut65lo15c2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mikegacek.blackjack",
+            "certificate_hash": "d10456b6087a2144b750a1fe4dc0c575647836ce"
+          }
+        },
+        {
+          "client_id": "879516809073-ri12j038stioakoik1k51g8u2f1o6kbd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAziCOC6_ewbLz8ereECc_NiyRIdRIh2qY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
