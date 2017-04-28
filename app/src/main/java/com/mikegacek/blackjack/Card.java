@@ -23,23 +23,24 @@ public class Card implements Serializable {
     private float speed;
 
     public Card(int value) {
+        value=(int)(Math.random()*2)+13;
         this.suit=(value-1)/13;
         this.value=value%13;
         if(this.value==0)
             this.value=13;
-        this.texture= new TextureRegion(Assets.cards,(this.value-1)*100,(this.suit)*140,100,140);
+        this.texture= new TextureRegion(Assets.cards,(this.value-1)*150,(this.suit)*210,150,210);
         this.rotation=0;
-        this.oldScaleX=1;
-        this.oldScaleY=1;
-        this.scaleX=1;
-        this.scaleY=1;
+        this.oldScaleX=4f/3f;
+        this.oldScaleY=4f/3f;
+        this.scaleX=4f/3f;
+        this.scaleY=4f/3f;
         this.visable=true;
-        this.currentX=640;
-        this.currentY=1060;
-        this.oldX=640;
-        this.oldY=640;
-        this.newX=640;
-        this.newY=1060;
+        this.currentX=1280;
+        this.currentY=2120;
+        this.oldX=1280;
+        this.oldY=2120;
+        this.newX=1280;
+        this.newY=2120;
         this.newScaleX=this.scaleX;
         this.newScaleY=this.scaleY;
         this.speed=.4f;
@@ -126,7 +127,7 @@ public class Card implements Serializable {
     }
 
     public void loadTexture() {
-        this.texture= new TextureRegion(Assets.cards,(this.value-1)*100,(this.suit)*140,100,140);
+        this.texture= new TextureRegion(Assets.cards,(this.value-1)*150,(this.suit)*210,150,210);
     }
 
     public boolean getVisable() {
@@ -265,8 +266,8 @@ public class Card implements Serializable {
         }
         else {
             scaleX+=.1f;
-            if(scaleX>=1) {
-                scaleX = 1;
+            if(scaleX>=4f/3f) {
+                scaleX = 4f/3f;
                 return true;
             }
         }
@@ -279,17 +280,17 @@ public class Card implements Serializable {
 
     public void reset() {
         rotation=0;
-        oldScaleX=1;
-        oldScaleY=1;
+        oldScaleX=4f/3f;
+        oldScaleY=4f/3f;
         scaleX=1;
         scaleY=1;
         visable=true;
-        oldX=640;
-        oldY=1060;
-        currentX=640;
-        currentY=1060;
-        newX=640;
-        newY=1060;
+        oldX=1280;
+        oldY=2120;
+        currentX=1280;
+        currentY=2120;
+        newX=1280;
+        newY=2120;
         newScaleX=1;
         newScaleY=1;
     }

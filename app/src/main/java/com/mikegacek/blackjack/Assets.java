@@ -17,24 +17,17 @@ public class Assets implements Serializable{
     public static Texture ins;
     public static Texture cards;
     public static Texture chips;
-    public static Texture hit;
-    public static Texture stand;
-    public static Texture doub;
-    public static Texture surr;
-    public static Texture split;
-    public static Texture sideBetLeft;
-    public static Texture sideBetRight;
+    public static Texture sideBet;
     public static Texture bet;
     public static Texture buttons;
     public static Texture numbers;
     public static Texture highlight;
     public static Texture payouts;
-    public static Texture particle;
     public static Texture slotMachine;
     public static Texture slotMachineNumbers;
-    public static Texture messages;
     public static Texture menu;
     public static Texture settingsFont;
+    public static Texture calibriText;
 
     public static TextureRegion green;
     public static TextureRegion blue;
@@ -49,20 +42,19 @@ public class Assets implements Serializable{
     public static TextureRegion doubleButton;
     public static TextureRegion splitButton;
     public static TextureRegion surrenderButton;
-    public static TextureRegion sbl;
-    public static TextureRegion sbr;
+    public static TextureRegion dealButton;
+    public static TextureRegion sideBetCircle;
     public static TextureRegion mainBet;
     public static TextureRegion addChips;
     public static TextureRegion removeChips;
-    public static TextureRegion check;
-    public static TextureRegion uncheck;
-    public static TextureRegion dealUnpressed;
-    public static TextureRegion repeatBet;
+    public static TextureRegion yes;
+    public static TextureRegion no;
+    public static TextureRegion doubleBetButton;
+    public static TextureRegion repeatBetButton;
     public static TextureRegion previousArrow;
     public static TextureRegion payoutPP;
     public static TextureRegion payout3v1;
     public static TextureRegion payout3v2;
-    public static TextureRegion p;
     public static TextureRegion slot;
     public static TextureRegion leftArrow;
     public static TextureRegion rightArrow;
@@ -72,8 +64,6 @@ public class Assets implements Serializable{
     public static TextureRegion slotArmConnection;
     public static TextureRegion slotArm;
     public static TextureRegion slotHandle;
-    public static TextureRegion messageAddChips;
-    public static TextureRegion messageRemoveChips;
     public static TextureRegion settingsButton;
     public static TextureRegion freeChipsButton;
     public static TextureRegion rulesButton;
@@ -94,6 +84,12 @@ public class Assets implements Serializable{
     public static TextureRegion freeChips;
     public static TextureRegion hint;
     public static TextureRegion play;
+    public static TextureRegion highlightLeft;
+    public static TextureRegion highlightRight;
+    public static TextureRegion highlightMiddle;
+    public static TextureRegion highlightGreen;
+    public static TextureRegion highlightRed;
+    public static TextureRegion exit;
 
     public static Sound slotMachineSpinner;
     public static Sound winningBet;
@@ -107,11 +103,20 @@ public class Assets implements Serializable{
     public static Sound dealCard;
     public static Sound button;
 
+
+
+    public static Texture testregion;
+    public static TextureRegion test;
+
     public static void load(GLGame game) {
 
+        calibriText= new Texture(game,"calibriText.png");
 
-        background = new Texture(game, "background.png");
-        green = new TextureRegion(background, 0, 0, 540, 960);
+        testregion=new Texture(game,"testbackground.png");
+        test=new TextureRegion(testregion,0,0,1080,1920);
+
+        background = new Texture(game, "greenBackground.png");
+        green = new TextureRegion(background, 0, 0, 1080, 1920);
         blue = new TextureRegion(background, 540, 0, 540, 960);
         red = new TextureRegion(background, 1080, 0, 540, 960);
         purple = new TextureRegion(background, 1620, 0, 540, 960);
@@ -124,76 +129,71 @@ public class Assets implements Serializable{
         tenToEleven = new TextureRegion(settingsFont, 286, 112, 294, 42);
 
         edgeBackground = new Texture(game, "edge.png");
-        edge = new TextureRegion(edgeBackground, 0, 0, 540, 960);
+        edge = new TextureRegion(edgeBackground, 0, 0, 1080, 200);
 
         ins = new Texture(game, "insurance.png");
-        insurance = new TextureRegion(ins, 0, 0, 540, 960);
+        insurance = new TextureRegion(ins, 0, 0, 986, 383);
+        yes = new TextureRegion(ins,0,383,150,82);
+        no = new TextureRegion(ins,150,383,133,82);
 
         chips = new Texture(game, "chips.png");
-        chip1 = new TextureRegion(chips, 0, 0, 67, 67);
-        chip5 = new TextureRegion(chips, 67, 0, 67, 67);
-        chip25 = new TextureRegion(chips, 134, 0, 67, 67);
-        chip100 = new TextureRegion(chips, 201, 0, 67, 67);
-        chip500 = new TextureRegion(chips, 268, 0, 67, 67);
-        chip1000 = new TextureRegion(chips, 335, 0, 67, 67);
-        chip10000 = new TextureRegion(chips, 402, 0, 67, 67);
+        chip1 = new TextureRegion(chips, 0, 0, 128,128);
+        chip5 = new TextureRegion(chips, 128, 0, 128, 128);
+        chip25 = new TextureRegion(chips, 256, 0, 128, 128);
+        chip100 = new TextureRegion(chips, 384, 0, 128, 128);
+        chip500 = new TextureRegion(chips, 512, 0, 128, 128);
+        chip1000 = new TextureRegion(chips, 640, 0, 128, 128);
+        chip10000 = new TextureRegion(chips, 768, 0, 128, 128);
+        highlightGreen= new TextureRegion(chips,0,256,146,146);
+        highlightRed = new TextureRegion(chips,146,256,146,146);
 
         cards = new Texture(game, "card.png");
-        back = new TextureRegion(cards, 0, 560, 100, 140);
+        back = new TextureRegion(cards, 0, 840, 150, 210);
 
-        hit = new Texture(game, "hit.png");
-        hitButton = new TextureRegion(hit, 0, 0, 150, 50);
-
-        stand = new Texture(game, "stand.png");
-        standButton = new TextureRegion(stand, 0, 0, 150, 50);
-
-        doub = new Texture(game, "double.png");
-        doubleButton = new TextureRegion(doub, 0, 0, 150, 100);
-
-        split = new Texture(game, "split.png");
-        splitButton = new TextureRegion(split, 0, 0, 150, 100);
-
-        surr = new Texture(game, "surrender.png");
-        surrenderButton = new TextureRegion(surr, 0, 0, 150, 100);
-
-        sideBetLeft = new Texture(game, "sideBetLeft.png");
-        sideBetRight = new Texture(game, "sideBetRight.png");
+        sideBet= new Texture(game,"sideBet.png");
         bet = new Texture(game, "bet.png");
-        sbl = new TextureRegion(sideBetLeft, 0, 0, 92, 147);
-        sbr = new TextureRegion(sideBetRight, 0, 0, 92, 147);
-        mainBet = new TextureRegion(bet, 0, 0, 151, 151);
+        sideBetCircle= new TextureRegion(sideBet,0,0,146,146);
+        mainBet = new TextureRegion(bet, 0, 0, 281, 281);
 
         buttons = new Texture(game, "buttons.png");
-        addChips = new TextureRegion(buttons, 0, 0, 64, 64);
-        removeChips = new TextureRegion(buttons, 64, 0, 64, 64);
-        repeatBet = new TextureRegion(buttons, 128, 0, 64, 64);
-        dealUnpressed = new TextureRegion(buttons, 0, 64, 272, 103);
-        previousArrow = new TextureRegion(buttons, 192, 0, 64, 64);
-        check = new TextureRegion(buttons, 0, 174, 75, 75);
-        uncheck = new TextureRegion(buttons, 75, 174, 75, 75);
+        dealButton = new TextureRegion(buttons,0,0,756,277);
+        freeChipsButton = new TextureRegion(buttons,0,277,756,277);
+        hitButton = new TextureRegion(buttons,0,554,363,109);
+        standButton = new TextureRegion(buttons,0,663,363,109);
+        doubleButton = new TextureRegion(buttons,0,772,363,145);
+        splitButton = new TextureRegion(buttons,0,917,363,145);
+        surrenderButton = new TextureRegion(buttons,0,1062,363,145);
+        doubleBetButton = new TextureRegion(buttons,0,1207,363,109);
+        repeatBetButton = new TextureRegion(buttons,0,1316,363,109);
+        addChips = new TextureRegion(buttons, 483, 554, 252, 122);
+        removeChips = new TextureRegion(buttons, 483, 676,252, 122);
+        previousArrow = new TextureRegion(buttons, 363, 798, 106, 106);
+
         settingsButton = new TextureRegion(buttons, 0, 249, 191, 52);
         freeChipsButton = new TextureRegion(buttons, 0, 301, 191, 52);
         rulesButton = new TextureRegion(buttons, 0, 353, 191, 52);
         soundOnButton = new TextureRegion(buttons, 0, 405, 191, 52);
         soundOffButton = new TextureRegion(buttons, 0, 457, 191, 52);
-        menuButton = new TextureRegion(buttons, 0, 509, 88, 23);
         menuArrowRight = new TextureRegion(buttons, 278, 66, 45, 60);
         menuArrowLeft = new TextureRegion(buttons, 278, 126, 45, 60);
         radioButtonOn = new TextureRegion(buttons, 150, 174, 40, 40);
         freeChips = new TextureRegion(buttons, 0, 539, 272, 103);
-        hint = new TextureRegion(buttons, 190, 170, 64, 64);
-        play = new TextureRegion(buttons, 256, 0, 64, 64);
+
+        exit=new TextureRegion(buttons,297,1425,99,99);
+        menuButton=new TextureRegion(buttons,198,1425,99,99);
+        hint = new TextureRegion(buttons, 99, 1425, 99, 99);
+        play = new TextureRegion(buttons, 0, 1425, 99, 99);
 
         numbers = new Texture(game, "numbers.png");
         highlight = new Texture(game, "highlight.png");
+        highlightLeft= new TextureRegion(highlight,0,0,12,70);
+        highlightRight = new TextureRegion(highlight,58,0,12,70);
+        highlightMiddle = new TextureRegion(highlight,32,0,1,70);
 
         payouts = new Texture(game, "payouts.png");
         payoutPP = new TextureRegion(payouts, 0, 177, 125, 56);
         payout3v1 = new TextureRegion(payouts, 0, 97, 142, 76);
         payout3v2 = new TextureRegion(payouts, 0, 0, 159, 95);
-
-        particle = new Texture(game, "particle.png");
-        p = new TextureRegion(particle, 0, 0, 5, 5);
 
         slotMachine = new Texture(game, "slotMachine.png");
         slot = new TextureRegion(slotMachine, 0, 0, 335, 240);
@@ -207,10 +207,6 @@ public class Assets implements Serializable{
 
         slotMachineNumbers = new Texture(game, "SlotMachineNumbers.png");
         slotNumbers = new TextureRegion(slotMachineNumbers, 0, 0, 225, 107);
-
-        messages = new Texture(game, "messages.png");
-        messageAddChips = new TextureRegion(messages, 0, 0, 272, 33);
-        messageRemoveChips = new TextureRegion(messages, 0, 33, 332, 34);
 
         menu = new Texture(game, "menu.png");
         deckMenu = new TextureRegion(menu, 0, 0, 540, 960);
@@ -236,24 +232,17 @@ public class Assets implements Serializable{
         ins.reload();
         cards.reload();
         chips.reload();
-        hit.reload();
-        stand.reload();
-        doub.reload();
-        surr.reload();
-        split.reload();
-        sideBetLeft.reload();
-        sideBetRight.reload();
+        sideBet.reload();
         bet.reload();
         buttons.reload();
         numbers.reload();
         highlight.reload();
         payouts.reload();
-        particle.reload();
         slotMachine.reload();
         slotMachineNumbers.reload();
-        messages.reload();
         menu.reload();
         settingsFont.reload();
+        calibriText.reload();
 
 
     }

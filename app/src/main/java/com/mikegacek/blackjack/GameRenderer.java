@@ -1,5 +1,7 @@
 package com.mikegacek.blackjack;
 
+import android.util.Log;
+
 import com.mikegacek.blackjack.framework.gl.Camera2D;
 import com.mikegacek.blackjack.framework.gl.ParticleGroup;
 import com.mikegacek.blackjack.framework.gl.SpriteBatcher;
@@ -24,9 +26,9 @@ public class GameRenderer implements Serializable{
     private transient SlotMachine slotMachine;
     private transient Settings settingsManager;
     private transient Camera2D cam;
-    private float bettingAlphas,insuranceAlphas,messageAlphas;
-    private BetAndCount hand1,hand2,hand3,hand4,dealerHand;
-    private ParticleGroup chipParticles;
+    private float bettingAlphas,insuranceAlphas;
+    private float hand1Alpha,hand2Alpha,hand3Alpha,hand4Alpha,dealerHandAlpha;
+    private float light;
 
     public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, Settings settings) {
         this.batcher=batcher;
@@ -35,36 +37,30 @@ public class GameRenderer implements Serializable{
         this.chipManager=chipManager;
         this.slotMachine=slotMachine;
         this.settingsManager=settings;
-        hand1= new BetAndCount(this.glGraphics,this.batcher);
-        hand2= new BetAndCount(this.glGraphics,this.batcher);
-        hand3= new BetAndCount(this.glGraphics,this.batcher);
-        hand4= new BetAndCount(this.glGraphics,this.batcher);
-        dealerHand = new BetAndCount(this.glGraphics,this.batcher);
         this.cam = new Camera2D(glGraphics, 540, 960);
         bettingAlphas=1;
         insuranceAlphas=0;
-        messageAlphas=0;
-        chipParticles= new ParticleGroup(Assets.particle,Assets.p,.8f,0,.8f,0,1);
+        light=1;
     }
 
     public void render(int state) {
 
         if(state<5) {
             renderBackground(state);
-            renderDoubleButton();
-            renderSplitButton();
-            renderSurrenderButton();
+            renderPressedButton(Assets.buttons,gameManager.doubleButton);
+            renderPressedButton(Assets.buttons,gameManager.splitButton);
+            renderPressedButton(Assets.buttons,gameManager.surrenderButton);
             renderEdge();
             renderMoney(state);
-            renderHitButton();
-            renderStandButton();
+            renderPressedButton(Assets.buttons,gameManager.hitButton);
+            renderPressedButton(Assets.buttons,gameManager.standButton);
             if(chipManager.getMoney()==0 &&chipManager.getMainBet().isEmpty() && chipManager.getSideBetLeft().isEmpty() && chipManager.getSideBetRight().isEmpty() && chipManager.getChips().isEmpty())
                 renderFreeChips(state);
             else
                 renderBetButtons(state);
-            renderChips();
             renderCards();
             renderBetsAndCounts();
+            renderChips();
             if (state == 0 || state == 3)
                 renderMenuButton();
             if (gameManager.getInsurance() && gameManager.getState() == 0)
@@ -297,61 +293,56 @@ public class GameRenderer implements Serializable{
             insuranceAlphas=1;
         glGraphics.getGl().glColor4f(1,1,1,insuranceAlphas);
         batcher.beginBatch(Assets.ins);
-        batcher.drawSprite(270,480,540,960,Assets.insurance);
+        batcher.drawSprite(541,1224,986,383,Assets.insurance);
         batcher.endBatch();
 
         String money="$";
         int amount=chipManager.getMainBetMoney()/2;
         money=money+amount;
         TextureRegion tempChip;
-        float x=270-13*(money.length()-1);
-        float y=580;
+        float x=40*(money.length()-1)+128;
+        float y=1260;
 
         if(amount<5)
-            tempChip=new TextureRegion(Assets.chips,0,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,0,128,128,128);
         else if(amount<25)
-            tempChip=new TextureRegion(Assets.chips,67,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,128,128,128,128);
         else if(amount<100)
-            tempChip=new TextureRegion(Assets.chips,134,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,256,128,128,128);
         else if(amount<500)
-            tempChip=new TextureRegion(Assets.chips,201,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,384,128,128,128);
         else if(amount<1000)
-            tempChip=new TextureRegion(Assets.chips,268,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,512,128,128,128);
         else if(amount<10000)
-            tempChip=new TextureRegion(Assets.chips,335,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,640,128,128,128);
         else
-            tempChip=new TextureRegion(Assets.chips,402,67,67,67);
+            tempChip=new TextureRegion(Assets.chips,768,128,128,128);
 
         batcher.beginBatch(Assets.chips);
-        batcher.drawSprite(x-70,y,67,67,tempChip);
+        batcher.drawSprite(540-x,y,128,128,tempChip);
         batcher.endBatch();
 
-        batcher.beginBatch(Assets.numbers);
-        for (int i = 0; i < money.length(); i++) {
-            TextureRegion temp= findNumber(money.charAt(i));
-            batcher.drawSprite(x, y, temp.width * .75f, temp.height * .75f, temp);
-            x+=26;
-        }
-        batcher.endBatch();
+
+        CalibriFont.drawNumbersCentered(money,540,y,1,1,1,1,1.2f,1.2f,batcher,glGraphics);
 
         batcher.beginBatch(Assets.chips);
-        batcher.drawSprite(x+44,y,67,67,tempChip);
+        batcher.drawSprite(540+x,y,128,128,tempChip);
         batcher.endBatch();
 
-        if(gameManager.check.getPressed())
+        if(gameManager.yes.getPressed())
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,insuranceAlphas);
 
-        batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(85,40,75,75,Assets.check);
+        batcher.beginBatch(Assets.ins);
+        batcher.drawSprite(gameManager.yes,Assets.yes);
         batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,insuranceAlphas);
 
-        if(gameManager.uncheck.getPressed())
+        if(gameManager.no.getPressed())
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,insuranceAlphas);
 
-        batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(455,40,75,75,Assets.uncheck);
+        batcher.beginBatch(Assets.ins);
+        batcher.drawSprite(gameManager.no,Assets.no);
         batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,1);
@@ -363,30 +354,30 @@ public class GameRenderer implements Serializable{
             batcher.beginBatch(Assets.cards);
 
             for (Card card : gameManager.playerCards) {
-                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), 100 * card.getScaleX(), 140 * card.getScaleY(), card.getRotation(), card.getTexture());
+                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), 150 * card.getScaleX(), 210 * card.getScaleY(), card.getRotation(), card.getTexture());
             }
             for (Card card : gameManager.playerSplitOne) {
-                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), 100 * card.getScaleX(), 140 * card.getScaleY(), card.getRotation(), card.getTexture());
+                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), 150 * card.getScaleX(), 210 * card.getScaleY(), card.getRotation(), card.getTexture());
             }
             for (Card card : gameManager.playerSplitTwo) {
-                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 20 * card.getScaleX()), 100 * card.getScaleX(), 140 * card.getScaleY(), card.getRotation(), card.getTexture());
+                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 30 * card.getScaleX()), 150 * card.getScaleX(), 210 * card.getScaleY(), card.getRotation(), card.getTexture());
             }
             for (Card card : gameManager.playerSplitThree) {
-                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 20), card.getCurrentY() + (((int) card.getRotation() / 90) * 20), 100 * card.getScaleX(), 140 * card.getScaleY(), card.getRotation(), card.getTexture());
+                batcher.drawSprite(card.getCurrentX() + (((int) card.getRotation() / 90) * 30* card.getScaleX()), card.getCurrentY() + (((int) card.getRotation() / 90) * 30* card.getScaleX()), 150 * card.getScaleX(), 210 * card.getScaleY(), card.getRotation(), card.getTexture());
             }
             //If dealer card is visible draw from 0->end else draw from 1->0
             if(gameManager.dealerCards.get(1).getVisable()) {
                 for (Card card : gameManager.dealerCards) {
-                    batcher.drawSprite(card.getCurrentX(), card.getCurrentY(), 100 * card.getScaleX(), 140 * card.getScaleY(), card.getTexture());
+                    batcher.drawSprite(card.getCurrentX(), card.getCurrentY(), 150 * card.getScaleX(), 210 * card.getScaleY(), card.getTexture());
                 }
             }
             else {
-                batcher.drawSprite(gameManager.dealerCards.get(1).getCurrentX(), gameManager.dealerCards.get(1).getCurrentY(), 100 * gameManager.dealerCards.get(1).getScaleX(), 140 * gameManager.dealerCards.get(1).getScaleY(), gameManager.dealerCards.get(1).getTexture());
-                batcher.drawSprite(gameManager.dealerCards.get(0).getCurrentX(), gameManager.dealerCards.get(0).getCurrentY(), 100 * gameManager.dealerCards.get(0).getScaleX(), 140 * gameManager.dealerCards.get(0).getScaleY(), gameManager.dealerCards.get(0).getTexture());
+                batcher.drawSprite(gameManager.dealerCards.get(1).getCurrentX(), gameManager.dealerCards.get(1).getCurrentY(), 150 * gameManager.dealerCards.get(1).getScaleX(), 210 * gameManager.dealerCards.get(1).getScaleY(), gameManager.dealerCards.get(1).getTexture());
+                batcher.drawSprite(gameManager.dealerCards.get(0).getCurrentX(), gameManager.dealerCards.get(0).getCurrentY(), 150 * gameManager.dealerCards.get(0).getScaleX(), 210 * gameManager.dealerCards.get(0).getScaleY(), gameManager.dealerCards.get(0).getTexture());
             }
             if(gameManager.getShuffleInProgress()) {
                 for(Card card:gameManager.shuffling) {
-                    batcher.drawSprite(card.getCurrentX(),card.getCurrentY(),100,140,card.getTexture());
+                    batcher.drawSprite(card.getCurrentX(),card.getCurrentY(),150*card.getScaleX(),210*card.getScaleY(),card.getTexture());
                 }
             }
             batcher.endBatch();
@@ -396,8 +387,9 @@ public class GameRenderer implements Serializable{
 
     private void renderMoney(int state) {
         String money="$"+chipManager.getShownMoney();
-        float x=270-9*(money.length()-1);
-        float y=40;
+        float x=540-17.5f*(money.length()-1);
+
+        float y=76;
         int payout=-1;
         float r=1,g=1,b=1;
         if(chipManager.getShownMoney()!=chipManager.getMoney()) {
@@ -410,44 +402,55 @@ public class GameRenderer implements Serializable{
         }
 
         //Money left to play
-        glGraphics.getGl().glColor4f(0,1,0,1);
-        batcher.beginBatch(Assets.numbers);
-        for (int i = 0; i < money.length(); i++) {
-            TextureRegion temp= findNumber(money.charAt(i));
-            batcher.drawSprite(x, y, temp.width * .5f, temp.height * .5f, temp);
-            x+=18;
-        }
-        batcher.endBatch();
+        CalibriFont.drawNumberEqualDistance(money,x,y,0,1,0,1,.75f,.75f,batcher,glGraphics);
         glGraphics.getGl().glColor4f(1,1,1,1);
 
         if(state==0) {
-            drawBetsWonLoss(270,140,chipManager.getMainBetMoney(),false);
+            drawBetsWonLoss(540,320,chipManager.getMainBetMoney(),false);
             if(gameManager.getSideBetLeft().getVersion()>0)
-                drawBetsWonLoss(160,140,chipManager.getSideBetLeftMoney(),false);
+                drawBetsWonLoss(304,575,chipManager.getSideBetLeftMoney(),false);
             if(gameManager.getSideBetRight().getVersion()>0)
-                drawBetsWonLoss(380,140,chipManager.getSideBetRightMoney(),false);
+                drawBetsWonLoss(776,575,chipManager.getSideBetRightMoney(),false);
         }
         else if(state==1 || state==2) {
             if(gameManager.getState()<6 && state==1)
-                drawBetsWonLoss(270,140,chipManager.getMainBetMoney(),false);
+                drawBetsWonLoss(540,320,chipManager.getMainBetMoney(),false);
             else
-                drawBetsWonLoss(270,140,gameManager.checkPayout(),true);
+                drawBetsWonLoss(540,320,gameManager.checkPayout(),true);
 
             if(state==1) {
                 if(gameManager.getSideBetLeft().getVersion()>0)
-                    drawBetsWonLoss(160,140,gameManager.getSideBetLeft().getPayoutAmount(),true);
+                    drawBetsWonLoss(304,575,gameManager.getSideBetLeft().getPayoutAmount(),true);
                 if(gameManager.getSideBetRight().getVersion()>0)
-                    drawBetsWonLoss(380,140,gameManager.getSideBetRight().getPayoutAmount(),true);
+                    drawBetsWonLoss(776,575,gameManager.getSideBetRight().getPayoutAmount(),true);
             }
             else {
                 if(gameManager.getSideBetLeft().getOldVersion()>0)
-                    drawBetsWonLoss(160,140,gameManager.getSideBetLeft().getPayoutAmount(),true);
+                    drawBetsWonLoss(304,575,gameManager.getSideBetLeft().getPayoutAmount(),true);
                 if(gameManager.getSideBetRight().getOldVersion()>0)
-                    drawBetsWonLoss(380,140,gameManager.getSideBetRight().getPayoutAmount(),true);
+                    drawBetsWonLoss(776,575,gameManager.getSideBetRight().getPayoutAmount(),true);
             }
 
         }
 
+    }
+
+    private String addCommas(String string) {
+        int index=string.length()%3;
+        while(index<string.length()&& index!=0) {
+            string = string.substring(0, index) + "," + string.substring(index);
+            index+=4;
+        }
+        return string;
+    }
+
+    private int numberOfCommas(String string) {
+        int total=0;
+        for(int i=0;i<string.length();i++) {
+            if(string.charAt(i)==',')
+                total++;
+        }
+        return total;
     }
 
     //Colored shows a green/red win loss amount, uncolored is total number of chips in play
@@ -479,54 +482,44 @@ public class GameRenderer implements Serializable{
             money="$0";
             r=.7f;g=.7f;b=.7f;
         }
-
-        x=x-18*.35f*(money.length()-1);
-        y=y;
-        glGraphics.getGl().glColor4f(r,g,b,1);
-        batcher.beginBatch(Assets.numbers);
-        for (int i = 0; i < money.length(); i++) {
-            TextureRegion temp= findNumber(money.charAt(i));
-            batcher.drawSprite(x, y, temp.width * .35f, temp.height * .35f, temp);
-            x+=36*.35f;
-        }
-        batcher.endBatch();
-        glGraphics.getGl().glColor4f(1,1,1,1);
+        CalibriFont.drawNumbersCentered(money,x,y,r,g,b,1,.6f,.6f,batcher,glGraphics);
     }
 
     private void renderBetsAndCounts() {
         if(bettingAlphas>0) {
-            hand1.resetAlpha();
-            hand2.resetAlpha();
-            hand3.resetAlpha();
-            hand4.resetAlpha();
-            dealerHand.resetAlpha();
+            hand1Alpha=0;
+            hand2Alpha=0;
+            hand3Alpha=0;
+            hand4Alpha=0;
+            dealerHandAlpha=0;
         }
 
         //Hand Bets
         if(gameManager.playerCards.size()!=0)
-            betAndCountCheck(gameManager.playerCards,chipManager.getPlayerHandMoney(),hand1);
+            hand1Alpha=betAndCountCheck(gameManager.playerCards,chipManager.getPlayerHandMoney(),hand1Alpha);
         if(gameManager.playerSplitOne.size()!=0)
-            betAndCountCheck(gameManager.playerSplitOne,chipManager.getPlayerSplitOneMoney(),hand2);
+            hand2Alpha=betAndCountCheck(gameManager.playerSplitOne,chipManager.getPlayerSplitOneMoney(),hand2Alpha);
         if(gameManager.playerSplitTwo.size()!=0)
-            betAndCountCheck(gameManager.playerSplitTwo,chipManager.getPlayerSplitTwoMoney(),hand3);
+            hand3Alpha=betAndCountCheck(gameManager.playerSplitTwo,chipManager.getPlayerSplitTwoMoney(),hand3Alpha);
         if(gameManager.playerSplitThree.size()!=0)
-            betAndCountCheck(gameManager.playerSplitThree,chipManager.getPlayerSplitThreeMoney(),hand4);
+            hand4Alpha=betAndCountCheck(gameManager.playerSplitThree,chipManager.getPlayerSplitThreeMoney(),hand4Alpha);
         if(gameManager.dealerCards.size()!=0)
-            dealerCountCheck(gameManager.dealerCards,dealerHand);
+            dealerCountCheck(gameManager.dealerCards);
 
     }
 
-    private void betAndCountCheck(ArrayList<Card> cards, int money, BetAndCount bet) {
-        Card temp = cards.get(cards.size()-1);
+    private float betAndCountCheck(ArrayList<Card> cards, int money, float alpha) {
+        Card temp = cards.get(0);
+        String bet="$"+money;
         float xPos,yPos;
         float r=1,g=1,b=1;
         //Get Offsets for position
         xPos=cards.get((cards.size()-1)/2).getCurrentX();
         if(cards.size()%2==0)
-            xPos+=16*cards.get(0).getScaleX();
-        yPos=cards.get(0).getCurrentY()+93*cards.get(0).getScaleY();
-        if(cards.get(0).getCurrentY()==400)
-            xPos=270;
+            xPos+=31*cards.get(0).getScaleX()*.75f;
+        yPos=cards.get(0).getCurrentY()+135*cards.get(0).getScaleY();
+        if(cards.get(0).getCurrentY()==800)
+            xPos=540;
 
         int handTotal=Math.abs(gameManager.calcHand(cards));
         int dealerTotal=Math.abs(gameManager.calcHand(gameManager.dealerCards));
@@ -553,64 +546,71 @@ public class GameRenderer implements Serializable{
             b=.7f;
         }
 
-        if(temp.getCurrentX()==temp.getNewX() && temp.getNewX()>0 && temp.getNewX()<560)
-            bet.setIncreaseAlpha(true);
-        if(temp.getRotation()==0)
-            bet.drawBetAndCount("$"+money,""+gameManager.calcHand(cards),xPos,yPos,.5f*cards.get(0).getScaleX(),.5f*cards.get(0).getScaleY(),r,g,b,false);
-        else
-            bet.drawBetAndCount("$"+money,""+gameManager.calcHand(cards),xPos,yPos,.5f*cards.get(0).getScaleX(),.5f*cards.get(0).getScaleY(),r,g,b,true);
-    }
+        if(temp.getCurrentX()==temp.getNewX() && temp.getNewX()>0 && temp.getNewX()<1120) {
+            alpha+=.1f;
+            if(alpha>1)
+                alpha=1;
+        }
+        else if(temp.getNewX()<0) {
+            alpha-=.1f;
+            if(alpha<0)
+                alpha=0;
+        }
+        else if(cards.size()==1 && alpha<1) //only to stop it from fainting showing after splitting
+            alpha=0;
 
-    private void dealerCountCheck(ArrayList<Card> cards, BetAndCount b) {
-        if(cards.get(0).getCurrentY()==780 && cards.get(1).getVisable())
-            b.setIncreaseAlpha(true);
-        b.drawCount(""+gameManager.calcHand(cards),270,687,.5f,.5f,90);
-    }
+        //draw highlight
+        float size=((32+(bet.length()+1)*31+64+127)*temp.getScaleX()*.75f);
+        if(cards.get(cards.size()-1).getRotation()==90 ) {
+            String originalBet="$"+Integer.parseInt(bet.substring(1))/2;
+            if(originalBet.length()!=bet.length())
+                size -= 31 * temp.getScaleX()*.75f;
+        }
 
+        glGraphics.getGl().glColor4f(1,1,1,alpha);
 
-    private void renderHitButton() {
-        if(gameManager.hitButton.getPressed())
-            glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
-        batcher.beginBatch(Assets.hit);
-        batcher.drawSprite(gameManager.hitButton.getXPos(), gameManager.hitButton.getYPos(), gameManager.hitButton.getWidth(), gameManager.hitButton.getHeight(), Assets.hitButton);
+        batcher.beginBatch(Assets.highlight);
+        batcher.drawSprite(xPos - size / 2 - 4 * temp.getScaleX()*.75f, yPos, 8 * temp.getScaleX()*.75f, 70 * temp.getScaleY()*.75f, Assets.highlightLeft);
+        batcher.drawSprite(xPos, yPos, size, 70 * temp.getScaleY()*.75f, Assets.highlightMiddle);
+        batcher.drawSprite(xPos + size / 2 + 4 * temp.getScaleX()*.75f, yPos, 8 * temp.getScaleX()*.75f, 70 * temp.getScaleY()*.75f, Assets.highlightRight);
         batcher.endBatch();
+
         glGraphics.getGl().glColor4f(1,1,1,1);
+
+
+        CalibriFont.drawNumbers(bet, xPos - size / 2 + 24 * temp.getScaleX()*.5625f, yPos, 1, 1, 0,alpha, temp.getScaleX()*.5625f, temp.getScaleY()*.5625f,batcher,glGraphics);
+        CalibriFont.drawNumbersBackwards(""+gameManager.calcHand(cards), xPos + size / 2 - 24 * temp.getScaleX()*.5625f, yPos, r, g, b,alpha, temp.getScaleX()*.5625f, temp.getScaleY()*.5625f,batcher,glGraphics);
+
+        return alpha;
     }
 
-    private void renderStandButton() {
-        if(gameManager.standButton.getPressed())
-            glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
-        batcher.beginBatch(Assets.stand);
-        batcher.drawSprite(gameManager.standButton.getXPos(), gameManager.standButton.getYPos(), gameManager.standButton.getWidth(), gameManager.standButton.getHeight(), Assets.standButton);
-        batcher.endBatch();
-        glGraphics.getGl().glColor4f(1,1,1,1);
-    }
+    private void dealerCountCheck(ArrayList<Card> cards) {
+        if(cards.get(0).getCurrentY()==1560 && cards.get(1).getVisable()) {
+            if(dealerHandAlpha<1)
+                dealerHandAlpha+=.1f;
+            else if(dealerHandAlpha>1)
+                dealerHandAlpha=1;
+        }
+        else {
+            if(dealerHandAlpha>0)
+                dealerHandAlpha-=.1f;
+            else if(dealerHandAlpha<0)
+                dealerHandAlpha=0;
+        }
 
-    private void renderDoubleButton() {
-        if(gameManager.doubleButton.getPressed())
-            glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
-        batcher.beginBatch(Assets.doub);
-        batcher.drawSprite(gameManager.doubleButton.getXPos(), gameManager.doubleButton.getYPos(), gameManager.doubleButton.getWidth(), gameManager.doubleButton.getHeight(), Assets.doubleButton);
-        batcher.endBatch();
-        glGraphics.getGl().glColor4f(1,1,1,1);
-    }
+        glGraphics.getGl().glColor4f(1,1,1,dealerHandAlpha);
 
-    private void renderSplitButton() {
-        if(gameManager.splitButton.getPressed())
-            glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
-        batcher.beginBatch(Assets.split);
-        batcher.drawSprite(gameManager.splitButton.getXPos(), gameManager.splitButton.getYPos(), gameManager.splitButton.getWidth(), gameManager.splitButton.getHeight(), Assets.splitButton);
-        batcher.endBatch();
-        glGraphics.getGl().glColor4f(1,1,1,1);
-    }
+        //508 to 476
 
-    private void renderSurrenderButton() {
-        if(gameManager.surrenderButton.getPressed())
-            glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
-        batcher.beginBatch(Assets.surr);
-        batcher.drawSprite(gameManager.surrenderButton.getXPos(),gameManager.surrenderButton.getYPos(),gameManager.surrenderButton.getWidth(),gameManager.surrenderButton.getHeight(),Assets.surrenderButton);
+        batcher.beginBatch(Assets.highlight);
+        batcher.drawSprite(540 - 180 / 2 - 3, 1374, 12, 70, Assets.highlightLeft);
+        batcher.drawSprite(540, 1374, 174, 70, Assets.highlightMiddle);
+        batcher.drawSprite(540 + 180 / 2 + 3, 1374, 12, 70, Assets.highlightRight);
         batcher.endBatch();
+
         glGraphics.getGl().glColor4f(1,1,1,1);
+
+        CalibriFont.drawNumbersCentered(""+gameManager.calcHand(gameManager.dealerCards),540,1374,1,1,1,dealerHandAlpha,.75f,.75f,batcher,glGraphics);
     }
 
     private void renderHintButton() {
@@ -725,33 +725,41 @@ public class GameRenderer implements Serializable{
             if(bettingAlphas>1)
                 bettingAlphas=1;
         }
-
-        messageAlphas+=.01f;
-        if(messageAlphas>=1)
-            messageAlphas=-1;
-        if(Math.abs(messageAlphas)>bettingAlphas)
-            messageAlphas=bettingAlphas;
-
-        if(chipManager.getDirection()==1) {
-            glGraphics.getGl().glColor4f(0, 1, 0, Math.abs(messageAlphas));
-            writeText("TAP TO ADD CHIPS", 187, 108, .35f);
-        }
-        else {
-            glGraphics.getGl().glColor4f(1,0,0,Math.abs(messageAlphas));
-            writeText("TAP TO REMOVE CHIPS",169,108,.35f);
-        }
-
-        glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
+        if(chipManager.getBetChips().getPressed())
+            glGraphics.getGl().glColor4f(.5f,.5f,.5f,Math.min(bettingAlphas,chipManager.getBetChips().getAlpha()));
+        else
+            glGraphics.getGl().glColor4f(1,1,1,Math.min(bettingAlphas,chipManager.getBetChips().getAlpha()));
 
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(chipManager.getBetChips().getXPos(), chipManager.getBetChips().getYPos(), Math.abs(chipManager.getBetChips().getWidth() * chipManager.getBetChips().getScaleX()), Math.abs(chipManager.getBetChips().getHeight() * chipManager.getBetChips().getScaleY()), chipManager.getBetChips().getTextureRegion());
+        batcher.drawSprite(chipManager.getBetChips(),Assets.addChips);
         batcher.endBatch();
+
+        if(chipManager.getRemoveChips().getPressed())
+            glGraphics.getGl().glColor4f(.5f,.5f,.5f,Math.min(bettingAlphas,chipManager.getRemoveChips().getAlpha()));
+        else
+            glGraphics.getGl().glColor4f(1,1,1,Math.min(bettingAlphas,chipManager.getRemoveChips().getAlpha()));
+
+        batcher.beginBatch(Assets.buttons);
+        batcher.drawSprite(chipManager.getRemoveChips(),Assets.removeChips);
+        batcher.endBatch();
+        glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
+
         if(chipManager.getRepeat().getPressed()) {
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,bettingAlphas);
         }
 
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(chipManager.getRepeat().getXPos(),chipManager.getRepeat().getYPos(),chipManager.getRepeat().getWidth(),chipManager.getRepeat().getHeight(),chipManager.getRepeat().getTextureRegion());
+        batcher.drawSprite(chipManager.getRepeat(),chipManager.getRepeat().getTextureRegion());
+        batcher.endBatch();
+
+        glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
+
+        if(chipManager.getDoubleBetButton().getPressed()) {
+            glGraphics.getGl().glColor4f(.5f,.5f,.5f,bettingAlphas);
+        }
+
+        batcher.beginBatch(Assets.buttons);
+        batcher.drawSprite(chipManager.getDoubleBetButton(),chipManager.getDoubleBetButton().getTextureRegion());
         batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
@@ -770,7 +778,7 @@ public class GameRenderer implements Serializable{
         }
 
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(chipManager.getDealButton().getXPos(), chipManager.getDealButton().getYPos(), chipManager.getDealButton().getWidth(), chipManager.getDealButton().getHeight(), chipManager.getDealButton().getTextureRegion());
+        batcher.drawSprite(chipManager.getDealButton(),chipManager.getDealButton().getTextureRegion());
         batcher.endBatch();
         //draw the previous cards arrow
         if (gameManager.playerCards.size() != 0 && state != 1 && state!=3) {
@@ -787,7 +795,7 @@ public class GameRenderer implements Serializable{
             }
 
             batcher.beginBatch(Assets.buttons);
-            batcher.drawSprite(chipManager.getPreviousArrow().getXPos(), chipManager.getPreviousArrow().getYPos(), chipManager.getPreviousArrow().getWidth()*.5f, chipManager.getPreviousArrow().getHeight()*.5f, chipManager.getPreviousArrow().getRotation(), chipManager.getPreviousArrow().getTextureRegion());
+            batcher.drawSprite(chipManager.getPreviousArrow(), chipManager.getPreviousArrow().getRotation(), chipManager.getPreviousArrow().getTextureRegion());
             batcher.endBatch();
             glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
         }
@@ -802,13 +810,18 @@ public class GameRenderer implements Serializable{
 
         glGraphics.getGl().glColor4f(1,1,1,1);
 
-        if(bettingAlphas==1)
-            chipParticles.drawParticles(glGraphics,batcher);
     }
     //chip 0-6
     private void drawChips(Button b, int chip) {
-        if(chip==chipManager.getChipLocation())
-            glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
+        if(chip==chipManager.getChipLocation()) {
+            glGraphics.getGl().glColor4f(1, 1, 1, bettingAlphas);
+            batcher.beginBatch(Assets.chips);
+            if(chipManager.getDirection()==1)
+                batcher.drawSprite(b.getXPos(),b.getYPos(),146,146,Assets.highlightGreen);
+            else
+                batcher.drawSprite(b.getXPos(),b.getYPos(),146,146,Assets.highlightRed);
+            batcher.endBatch();
+        }
         else
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,bettingAlphas);
 
@@ -825,19 +838,19 @@ public class GameRenderer implements Serializable{
             batcher.beginBatch(Assets.chips);
             for(int i=0;i<chipManager.getSideBetLeft().size() && j<1800;i++,j++) {
                 Chip chip=chipManager.getSideBetLeft().get(i);
-                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 67 * chip.getScaleX(), 67 * chip.getScaleY(), chip.getTexture());
+                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 128 * chip.getScaleX(), 128 * chip.getScaleY(), chip.getTexture());
             }
             for(int i=0;i<chipManager.getSideBetRight().size() && j<1800;i++,j++) {
                 Chip chip=chipManager.getSideBetRight().get(i);
-                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 67 * chip.getScaleX(), 67 * chip.getScaleY(), chip.getTexture());
+                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 128 * chip.getScaleX(), 128 * chip.getScaleY(), chip.getTexture());
             }
             for(int i=0;i<chipManager.getMainBet().size() && j<1800;i++,j++) {
                 Chip chip=chipManager.getMainBet().get(i);
-                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 67 * chip.getScaleX(), 67 * chip.getScaleY(), chip.getTexture());
+                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 128 * chip.getScaleX(), 128 * chip.getScaleY(), chip.getTexture());
             }
             for(int i=0;i<chipManager.getChips().size() && j<1800;i++,j++) {
                 Chip chip=chipManager.getChips().get(i);
-                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 67 * chip.getScaleX(), 67 * chip.getScaleY(), chip.getTexture());
+                batcher.drawSprite(chip.getCurrentX(), chip.getCurrentY(), 128 * chip.getScaleX(), 128 * chip.getScaleY(), chip.getTexture());
             }
             batcher.endBatch();
         }
@@ -846,25 +859,33 @@ public class GameRenderer implements Serializable{
     private void renderBackground(int state) {
 
 
-        if(state==4) {
-            float[] ambient = {.2f, .2f, .2f, 1};
-            float[] position = {0, 0, 1, 0};
-
-            glGraphics.getGl().glLightfv(glGraphics.getGl().GL_LIGHT0, glGraphics.getGl().GL_DIFFUSE, ambient, 0);
-            glGraphics.getGl().glLightfv(glGraphics.getGl().GL_LIGHT0, glGraphics.getGl().GL_POSITION, position, 0);
-
-            glGraphics.getGl().glEnable(glGraphics.getGl().GL_LIGHTING);
-            glGraphics.getGl().glEnable(glGraphics.getGl().GL_LIGHT0);
+        if(state==4 || (gameManager.getInsurance() && gameManager.getState() == 0)) {
+            if(light>.2f)
+                light-=.05f;
+            else
+                light=.2f;
         }
+        else {
+            if(light<1)
+                light+=.05f;
+            else
+                light=1;
+        }
+
+        glGraphics.getGl().glColor4f(light,light,light,1);
+
+        batcher.beginBatch(Assets.background);
+        batcher.drawSprite(540, 960, 1080, 1920, settingsManager.getBackgroundTexture());
+        batcher.endBatch();
+
+        batcher.beginBatch(Assets.testregion);
+        batcher.drawSprite(540, 960, 1080, 1920, Assets.test);
+        batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,1);
 
-        batcher.beginBatch(Assets.background);
-        batcher.drawSprite(270, 480, 540, 960, settingsManager.getBackgroundTexture());
-        batcher.endBatch();
-
         batcher.beginBatch(Assets.bet);
-        batcher.drawSprite(270, 230, 151,151,Assets.mainBet);
+        batcher.drawSprite(540, 487, 281,281,Assets.mainBet);
         batcher.endBatch();
 
 
@@ -882,104 +903,15 @@ public class GameRenderer implements Serializable{
             gameManager.getSideBetRight().drawPayouts(batcher,glGraphics,gameManager.getSideBetRight().getPayout(),gameManager.getSideBetRight().getVersion());
 
 
-        glGraphics.getGl().glColor4f(.5f,.5f,.5f,.8f);
-
-
-        writeText("DEALER "+settingsManager.getDealerString()+" ON SOFT 17",15,950,.35f);
-        writeText("BLACKJACK PAYS: "+settingsManager.getBlackjackPaysString(),15,928,.35f);
-        writeText("INSURANCE PAYS: 2/1",13,906,.35f);
-        if(settingsManager.getCSM()==true) {
-            writeText("CONTINUOUS SHUFFLING",15,884,.35f);
-        }
-        else if(!gameManager.getShuffleInProgress() && ((int)(gameManager.getDecks()*52*(settingsManager.getPenetration()/100f))-gameManager.getPointer())>0)
-            //writeText("CARDS SEEN:" + ((int)(gameManager.getDecks()*52*(settingsManager.getPenetration()/100f))-gameManager.getPointer()),15,884,.35f);
-            writeText("CARDS SEEN: " + gameManager.getPointer() + " OF " + gameManager.getDecks()*52,15,884,.35f);
-        else
-            writeText("SHUFFLING",15,884,.35f);
-        writeText("DECKS: " + gameManager.getDecks(),15,862,.35f);
-
         glGraphics.getGl().glColor4f(1,1,1,1);
-        glGraphics.getGl().glDisable(glGraphics.getGl().GL_LIGHTING);
     }
 
     private void renderEdge() {
         batcher.beginBatch(Assets.edgeBackground);
-        batcher.drawSprite(270,480,540,960,Assets.edge);
+        batcher.drawSprite(540,100,1080,200,Assets.edge);
         batcher.endBatch();
     }
 
-    public ParticleGroup getChipParticles() {
-        return chipParticles;
-    }
-
-    private void writeText(String text, float x, float y,float size) {
-        batcher.beginBatch(Assets.numbers);
-        TextureRegion temp = findNumber(text.charAt(0));
-        for (int i = 0; i < text.length(); i++) {
-            batcher.drawSprite(x, y, temp.width * size, temp.height * size, temp);
-            if (i < text.length() - 1) {
-                x+=(temp.width/2+2)*size;
-                temp = findNumber(text.charAt(i+1));
-                x+=(temp.width/2+2)*size;
-            }
-        }
-        batcher.endBatch();
-    }
-
-    private TextureRegion findSettingsNumber(char c) {
-        TextureRegion r;
-        switch(c) {
-            case '1':
-                r=new TextureRegion(Assets.settingsFont,0,0,12,28);
-                break;
-            case '2':
-                r=new TextureRegion(Assets.settingsFont,15,0,13,28);
-                break;
-            case '3':
-                r=new TextureRegion(Assets.settingsFont,31,0,13,28);
-                break;
-            case '4':
-                r=new TextureRegion(Assets.settingsFont,46,0,15,28);
-                break;
-            case '5':
-                r=new TextureRegion(Assets.settingsFont,63,0,14,28);
-                break;
-            case '6':
-                r=new TextureRegion(Assets.settingsFont,79,0,14,28);
-                break;
-            case '7':
-                r=new TextureRegion(Assets.settingsFont,95,0,14,28);
-                break;
-            case '8':
-                r=new TextureRegion(Assets.settingsFont,111,0,15,28);
-                break;
-            case '9':
-                r=new TextureRegion(Assets.settingsFont,128,0,14,28);
-                break;
-            case '0':
-                r=new TextureRegion(Assets.settingsFont,144,0,14,28);
-                break;
-            case '$':
-                r=new TextureRegion(Assets.settingsFont,159,0,15,28);
-                break;
-            case '+':
-                r=new TextureRegion(Assets.settingsFont,176,0,15,28);
-                break;
-            case '-':
-                r=new TextureRegion(Assets.settingsFont,192,0,15,28);
-                break;
-            case '%':
-                r=new TextureRegion(Assets.settingsFont,208,0,21,28);
-                break;
-            case ':':
-                r=new TextureRegion(Assets.settingsFont,232,0,5,28);
-                break;
-            default:
-                r=null;
-        }
-
-        return r;
-    }
 
     private TextureRegion findSettingsNumber2(char c) {
         TextureRegion r;
@@ -1175,12 +1107,6 @@ public class GameRenderer implements Serializable{
 
 
     public void loadData(SpriteBatcher batcher, GLGraphics glGraphics, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, Settings settingsManager, Camera2D cam) {
-        chipParticles.loadTextures(Assets.particle,Assets.p);
-        hand1.load(glGraphics,batcher);
-        hand2.load(glGraphics,batcher);
-        hand3.load(glGraphics,batcher);
-        hand4.load(glGraphics,batcher);
-        dealerHand.load(glGraphics,batcher);
 
         this.batcher=batcher;
         this.glGraphics=glGraphics;
@@ -1191,9 +1117,6 @@ public class GameRenderer implements Serializable{
         this.cam=cam;
     }
 
-    public void loadParticles() {
-        chipParticles.loadTextures(Assets.particle,Assets.p);
-    }
 
 }
 

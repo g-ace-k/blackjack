@@ -41,12 +41,12 @@ public class SlotMachineAd extends Activity {
         // set the ad unit ID
         mInterstitialAd.setAdUnitId(getString(R.string.banner_ad_unit_id));
 
-        /*AdRequest adRequest = new AdRequest.Builder()
+        AdRequest adRequest = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 .addTestDevice("EC0BF4F45703476285EA00FD292318F8")
-                .build();*/
+                .build();
 
-        AdRequest adRequest = new AdRequest.Builder().build();
+        //AdRequest adRequest = new AdRequest.Builder().build();
 
         // Load ads into Interstitial Ads
         mInterstitialAd.loadAd(adRequest);

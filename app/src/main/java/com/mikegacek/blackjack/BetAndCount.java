@@ -52,9 +52,9 @@ public class BetAndCount  implements Serializable {
                 alpha=0;
         }
 
-        TextureRegion highlightLeft= new TextureRegion(Assets.highlight,0,0,8,70);
-        TextureRegion highlightRight = new TextureRegion(Assets.highlight,62,0,8,70);
-        TextureRegion highlight = new TextureRegion(Assets.highlight,32,0,1,70);
+        TextureRegion highlightLeft= new TextureRegion(Assets.highlight,0,0,12,70);
+        TextureRegion highlightRight = new TextureRegion(Assets.highlight,58,0,12,70);
+        TextureRegion highlight = new TextureRegion(Assets.highlight,10,0,50,70);
 
         float size=((32+(bet.length()+1)*31+64+127)*scaleX);
         if(doubled ) {
@@ -99,8 +99,8 @@ public class BetAndCount  implements Serializable {
                 alpha=0;
         }
 
-        TextureRegion highlightLeft= new TextureRegion(Assets.highlight,0,0,8,70);
-        TextureRegion highlightRight = new TextureRegion(Assets.highlight,62,0,8,70);
+        TextureRegion highlightLeft= new TextureRegion(Assets.highlight,0,0,12,70);
+        TextureRegion highlightRight = new TextureRegion(Assets.highlight,58,0,12,70);
         TextureRegion highlight = new TextureRegion(Assets.highlight,32,0,1,70);
 
         glGraphics.getGl().glColor4f(1,1,1,alpha);

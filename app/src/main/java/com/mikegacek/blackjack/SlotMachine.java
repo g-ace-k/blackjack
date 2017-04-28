@@ -308,6 +308,9 @@ public class SlotMachine implements Serializable {
             case 21:
                 chipManager.payout(chipManager.getMainBet(),chipManager.getMainBetChips(),4,450);
                 break;
+            default:
+                chipManager.payout(chipManager.getMainBet(),chipManager.getMainBetChips(),4,9999);
+                break;
 
         }
     }

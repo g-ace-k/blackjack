@@ -6,6 +6,8 @@ import java.io.Serializable;
  * Created by Michael on 2/6/2017.
  */
 
+// NEEDS WORK
+
 public class Particle implements Serializable{
 
     float r,g,b,a;

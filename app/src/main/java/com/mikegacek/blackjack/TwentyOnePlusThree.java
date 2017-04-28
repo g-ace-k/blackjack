@@ -176,19 +176,21 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
 
         switch(v) {
             case 1:
-                payouts.add(Assets.sbr);
-                payouts.add(new TextureRegion(Assets.payouts,0,100,141,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,120,141,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,140,141,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,160,141,20));
+                payouts.add(Assets.sideBetCircle);
+                payouts.add(new TextureRegion(Assets.payouts,0,172,376,54));
+                payouts.add(new TextureRegion(Assets.payouts,0,236,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,272,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,307,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,342,376,35));
                 break;
             case 2:
-                payouts.add(Assets.sbr);
-                payouts.add(new TextureRegion(Assets.payouts,0,0,159,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,20,159,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,40,159,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,60,159,20));
-                payouts.add(new TextureRegion(Assets.payouts,0,80,159,20));
+                payouts.add(Assets.sideBetCircle);
+                payouts.add(new TextureRegion(Assets.payouts,0,398,376,54));
+                payouts.add(new TextureRegion(Assets.payouts,0,462,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,497,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,533,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,568,376,35));
+                payouts.add(new TextureRegion(Assets.payouts,0,603,376,35));
         }
     }
 
@@ -199,9 +201,12 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         createPayoutTextures(v);
 
         glGraphics.getGl().glColor4f(1,1,1,1);
-        if(payouts.size()>=1) {
-            batcher.beginBatch(Assets.sideBetRight);
-            batcher.drawSprite(380, 230, 92, 147, payouts.get(0));
+        if(payouts.size()>=2) {
+            batcher.beginBatch(Assets.sideBet);
+            batcher.drawSprite(776, 674, 146, 146, payouts.get(0));
+            batcher.endBatch();
+            batcher.beginBatch(Assets.payouts);
+            batcher.drawSprite(892,517,376,54,payouts.get(1));
             batcher.endBatch();
         }
         //Payouts 30,20,10,5
@@ -209,39 +214,39 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         switch(v) {
             case 1:
                 if(pay==30)
-                    change=1;
-                else if(pay==20)
                     change=2;
-                else if(pay==10)
+                else if(pay==20)
                     change=3;
-                else if(pay==5)
+                else if(pay==10)
                     change=4;
+                else if(pay==5)
+                    change=5;
 
-                for(int i=1;i<payouts.size();i++) {
+                for(int i=2;i<payouts.size();i++) {
                     if(i==change)
                         glGraphics.getGl().glColor4f(0,1,0,1);
                     batcher.beginBatch(Assets.payouts);
-                    batcher.drawSprite(446,375-(i-1)*20,141,20,payouts.get(i));
+                    batcher.drawSprite(892,464-(i-2)*35,376,35,payouts.get(i));
                     batcher.endBatch();
                     glGraphics.getGl().glColor4f(1,1,1,1);
                 }
                 break;
             case 2:
                 if(pay==100)
-                    change=1;
-                else if(pay==35)
                     change=2;
-                else if(pay==33)
+                else if(pay==35)
                     change=3;
-                else if(pay==10)
+                else if(pay==33)
                     change=4;
-                else if(pay==5)
+                else if(pay==10)
                     change=5;
-                for(int i=1;i<payouts.size();i++) {
+                else if(pay==5)
+                    change=6;
+                for(int i=2;i<payouts.size();i++) {
                     if(i==change)
                         glGraphics.getGl().glColor4f(0,1,0,1);
                     batcher.beginBatch(Assets.payouts);
-                    batcher.drawSprite(455,395-(i-1)*20,159,20,payouts.get(i));
+                    batcher.drawSprite(892,464-(i-2)*35,376,35,payouts.get(i));
                     batcher.endBatch();
                     glGraphics.getGl().glColor4f(1,1,1,1);
                 }

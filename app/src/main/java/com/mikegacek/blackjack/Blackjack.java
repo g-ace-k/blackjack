@@ -36,8 +36,6 @@ public class Blackjack extends GLGame {
             firstTimeCreate=false;
         }
         else {
-            editor.putBoolean("reloadParticles",true);
-            editor.commit();
             Assets.reload();
         }
     }

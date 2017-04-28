@@ -59,12 +59,12 @@ public class MainScreen extends GLScreen {
         waitTime=180;
         holdTime=61;
         sideBetWaitTime=60;
-        guiCam = new Camera2D(glGraphics,540,960);
+        guiCam = new Camera2D(glGraphics,1080,1920);
         batcher = new SpriteBatcher(glGraphics,2000);
         touchPoint = new Vector2();
         random = new Random();
 
-        loadData();
+        //loadData();
 
         sharedPreferences = glGame.getSharedPreferences("com.blackjack",Context.MODE_PRIVATE);
         editor=sharedPreferences.edit();
@@ -98,7 +98,6 @@ public class MainScreen extends GLScreen {
             chipManager.setMoney(sharedPreferences.getInt("com.blackjack.money",500));
         }
 
-        gameRenderer.getChipParticles().setTime(.8f);
 
     }
     @Override
@@ -157,11 +156,13 @@ public class MainScreen extends GLScreen {
                 chipManager.getDealButton().setPressed(OverlapTester.pointInRectangle(chipManager.getDealButton(),touchPoint));
                 chipManager.getRepeat().setPressed(OverlapTester.pointInRectangle(chipManager.getRepeat(),touchPoint));
                 chipManager.getFreeChips().setPressed(OverlapTester.pointInRectangle(chipManager.getFreeChips(),touchPoint));
+                chipManager.getDoubleBetButton().setPressed(OverlapTester.pointInRectangle(chipManager.getDoubleBetButton(),touchPoint));
             }
             if(event.type==TouchEvent.TOUCH_UP) {
                 chipManager.getDealButton().setPressed(false);
                 chipManager.getRepeat().setPressed(false);
                 chipManager.getFreeChips().setPressed(false);
+                chipManager.getDoubleBetButton().setPressed(false);
                 if(OverlapTester.pointInRectangle(chipManager.getFreeChips(),touchPoint) && chipManager.getTotalMoney()==0) {
                     gameManager.cardsToDiscard();
                     Assets.button.play(sound);
@@ -175,12 +176,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=0) {
                         chipManager.setChipSelection(1);
                         chipManager.setChipLocation(0);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip1().getXPos()-1.5f,chipManager.getChip1().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip5(), touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -188,12 +187,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=1) {
                         chipManager.setChipSelection(5);
                         chipManager.setChipLocation(1);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip5().getXPos()-1.5f,chipManager.getChip5().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip25(),touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -201,12 +198,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=2) {
                         chipManager.setChipSelection(25);
                         chipManager.setChipLocation(2);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip25().getXPos()-1.5f,chipManager.getChip25().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip100(),touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -214,12 +209,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=3) {
                         chipManager.setChipSelection(100);
                         chipManager.setChipLocation(3);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip100().getXPos()-1.5f,chipManager.getChip100().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip500(),touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -227,12 +220,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=4) {
                         chipManager.setChipSelection(500);
                         chipManager.setChipLocation(4);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip500().getXPos()-1.5f,chipManager.getChip500().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip1000(),touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -240,12 +231,10 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=5) {
                         chipManager.setChipSelection(1000);
                         chipManager.setChipLocation(5);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip1000().getXPos()-1.5f,chipManager.getChip1000().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip10000(),touchPoint) && chipManager.getTotalMoney()!=0) {
@@ -253,15 +242,13 @@ public class MainScreen extends GLScreen {
                     if(chipManager.getChipLocation()!=6) {
                         chipManager.setChipSelection(10000);
                         chipManager.setChipLocation(6);
-                        gameRenderer.getChipParticles().setCircle(new Vector2(chipManager.getChip10000().getXPos()-1.5f,chipManager.getChip10000().getYPos()+1.5f),32,0);
                     }
                     else {
                         chipManager.setChipSelection(0);
                         chipManager.setChipLocation(-1);
-                        gameRenderer.getChipParticles().setOn(false);
                     }
                 }
-                else if(OverlapTester.pointInRectangle(chipManager.getLeft(),touchPoint) && chipManager.getChipLocation()>=0 && gameManager.getSideBetLeft().getVersion()>0) {
+                else if(OverlapTester.pointInCircle(chipManager.getLeft(),touchPoint) && chipManager.getChipLocation()>=0 && gameManager.getSideBetLeft().getVersion()>0) {
                     if(chipManager.getDirection()==1 && chipManager.getChipLocation()>=0) {
                         chipManager.addChips(1, chipManager.getChipLocation());
                     }
@@ -269,7 +256,7 @@ public class MainScreen extends GLScreen {
                         chipManager.removeChip(1, chipManager.getChipLocation());
                     }
                 }
-                else if(OverlapTester.pointInRectangle(chipManager.getRight(),touchPoint) && chipManager.getChipLocation()>=0 && gameManager.getSideBetRight().getVersion()>0) {
+                else if(OverlapTester.pointInCircle(chipManager.getRight(),touchPoint) && chipManager.getChipLocation()>=0 && gameManager.getSideBetRight().getVersion()>0) {
                     if(chipManager.getDirection()==1 && chipManager.getChipLocation()>=0) {
                         chipManager.addChips(2, chipManager.getChipLocation());
                     }
@@ -285,13 +272,9 @@ public class MainScreen extends GLScreen {
                         chipManager.removeChip(3,chipManager.getChipLocation());
                     }
                 }
-                else if(OverlapTester.pointInRectangle(chipManager.getBetChips(),touchPoint) && chipManager.getTotalMoney()!=0) {
+                else if((OverlapTester.pointInRectangle(chipManager.getBetChips(),touchPoint) || OverlapTester.pointInRectangle(chipManager.getRemoveChips(),touchPoint)) && chipManager.getTotalMoney()!=0) {
                     Assets.button.play(sound);
                     chipManager.setDirection(chipManager.getDirection()*-1);
-                    if(chipManager.getDirection()==1)
-                        gameRenderer.getChipParticles().setRGBA(0,.8f,0,1);
-                    else
-                        gameRenderer.getChipParticles().setRGBA(1,0,0,1);
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getRepeat(),touchPoint) && chipManager.getTotalMoney()!=0) {
                     if(chipManager.repeatTotal()<=chipManager.getMoney()) {
@@ -308,6 +291,12 @@ public class MainScreen extends GLScreen {
                             }
                         });
                     }
+                }
+                else if(OverlapTester.pointInRectangle(chipManager.getDoubleBetButton(),touchPoint)) {
+                    if(chipManager.getMainBetMoney()>chipManager.getMoney())
+                        chipManager.doubleBet(chipManager.getMoney());
+                    else
+                        chipManager.doubleBet(chipManager.getMainBetMoney());
                 }
                 else if (OverlapTester.pointInRectangle(gameManager.menu,touchPoint)) {
                     Assets.button.play(sound);
@@ -388,8 +377,8 @@ public class MainScreen extends GLScreen {
             touchPoint.set(event.x,event.y);
             guiCam.touchToWorld(touchPoint);
             if(event.type==TouchEvent.TOUCH_DRAGGED || event.type==TouchEvent.TOUCH_DOWN) {
-                gameManager.check.setPressed(OverlapTester.pointInRectangle(gameManager.check,touchPoint));
-                gameManager.uncheck.setPressed(OverlapTester.pointInRectangle(gameManager.uncheck,touchPoint));
+                gameManager.yes.setPressed(OverlapTester.pointInRectangle(gameManager.yes,touchPoint));
+                gameManager.no.setPressed(OverlapTester.pointInRectangle(gameManager.no,touchPoint));
                 gameManager.hitButton.setPressed(OverlapTester.pointInRectangle(gameManager.hitButton,touchPoint));
                 gameManager.standButton.setPressed(OverlapTester.pointInRectangle(gameManager.standButton,touchPoint));
                 gameManager.doubleButton.setPressed(OverlapTester.pointInUpperHalfRectangle(gameManager.doubleButton,touchPoint));
@@ -399,8 +388,8 @@ public class MainScreen extends GLScreen {
                 gameManager.playButton.setPressed(OverlapTester.pointInRectangle(gameManager.playButton,touchPoint));
             }
             if(event.type==TouchEvent.TOUCH_UP) {
-                gameManager.check.setPressed(false);
-                gameManager.uncheck.setPressed(false);
+                gameManager.yes.setPressed(false);
+                gameManager.no.setPressed(false);
                 gameManager.hitButton.setPressed(false);
                 gameManager.standButton.setPressed(false);
                 gameManager.doubleButton.setPressed(false);
@@ -468,11 +457,11 @@ public class MainScreen extends GLScreen {
                         }
                     }
                 }
-                else if(OverlapTester.pointInRectangle(gameManager.check,touchPoint) && gameManager.getInsurance()==true) {
+                else if(OverlapTester.pointInRectangle(gameManager.yes,touchPoint) && gameManager.getInsurance()==true) {
                     Assets.button.play(sound);
                     gameManager.insurance(true);
                 }
-                else if(OverlapTester.pointInRectangle(gameManager.uncheck,touchPoint) && gameManager.getInsurance()==true) {
+                else if(OverlapTester.pointInRectangle(gameManager.no,touchPoint) && gameManager.getInsurance()==true) {
                     Assets.button.play(sound);
                     gameManager.insurance(false);
                 }
@@ -978,11 +967,6 @@ public class MainScreen extends GLScreen {
     }
 
     public void presentBetting(float deltaTime) {
-        if(sharedPreferences.getBoolean("reloadParticles",true)) {
-            gameRenderer.loadParticles();
-            editor.putBoolean("reloadParticles",false);
-            editor.commit();
-        }
 
     }
 
@@ -1086,7 +1070,7 @@ public class MainScreen extends GLScreen {
 
     @Override
     public void resume() {
-
+        //loadData();
     }
 
     @Override

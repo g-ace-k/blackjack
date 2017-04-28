@@ -30,10 +30,11 @@ public class PerfectPairs implements SideBets,Serializable {
         payouts.clear();
         switch(v) {
             case 1:
-                payouts.add(Assets.sbl);
-                payouts.add(new TextureRegion(Assets.payouts, 0, 180, 124, 20));
-                payouts.add(new TextureRegion(Assets.payouts, 0, 200, 124, 20));
-                payouts.add(new TextureRegion(Assets.payouts, 0, 220, 124, 20));
+                payouts.add(Assets.sideBetCircle);
+                payouts.add(new TextureRegion(Assets.payouts,0,0,376,54));
+                payouts.add(new TextureRegion(Assets.payouts, 0, 64, 376, 35));
+                payouts.add(new TextureRegion(Assets.payouts, 0, 99, 376, 35));
+                payouts.add(new TextureRegion(Assets.payouts, 0, 135, 376, 35));
                 break;
         }
     }
@@ -123,24 +124,27 @@ public class PerfectPairs implements SideBets,Serializable {
         //Row 2 Colored Pair
         //Row 3 Mixed Pair
         glGraphics.getGl().glColor4f(1,1,1,1);
-        if(payouts.size()>=1) {
-            batcher.beginBatch(Assets.sideBetLeft);
-            batcher.drawSprite(160, 230, 92, 147, payouts.get(0));
+        if(payouts.size()>=2) {
+            batcher.beginBatch(Assets.sideBet);
+            batcher.drawSprite(304, 674, 146, 146, payouts.get(0));
+            batcher.endBatch();
+            batcher.beginBatch(Assets.payouts);
+            batcher.drawSprite(188,517,376,54,payouts.get(1));
             batcher.endBatch();
         }
 
         if(pay==25)
-            change=1;
-        else if(pay==15)
             change=2;
-        else if(pay==5)
+        else if(pay==15)
             change=3;
-        for(int i=1;i<payouts.size();i++) {
+        else if(pay==5)
+            change=4;
+        for(int i=2;i<payouts.size();i++) {
             if(i==change) {
                 glGraphics.getGl().glColor4f(0,1,0,1);
             }
             batcher.beginBatch(Assets.payouts);
-            batcher.drawSprite(106, 375-(i-1)*20, 124, 20, payouts.get(i));
+            batcher.drawSprite(188, 464-(i-2)*35, 376, 35, payouts.get(i));
             batcher.endBatch();
             glGraphics.getGl().glColor4f(1, 1, 1, 1);
         }

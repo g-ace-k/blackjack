@@ -56,7 +56,7 @@ public abstract class GLGame extends Activity implements Game, Renderer {
         glView.setRenderer(this);
         setContentView(glView);
 
-        //0=false 1=true 2=changing
+
         glGraphics = new GLGraphics(glView);
         fileIO = new AndroidFileIO(this);
         audio = new AndroidAudio(this);
@@ -78,6 +78,7 @@ public abstract class GLGame extends Activity implements Game, Renderer {
     @Override
     public void onBackPressed() {
         //If a disabled back button is pressed
+        //0=false 1=true 2=changing
         if(sharedPreferences.getInt("disableBack",0)==1) {
             editor.putInt("disableBack",2);
             editor.commit();

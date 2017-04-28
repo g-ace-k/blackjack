@@ -30,28 +30,28 @@ public class ChipManager  implements Serializable {
 
     private int money,shownMoney,sideBetLeftMoney,sideBetRightMoney,mainBetMoney,playerHandMoney,playerSplitOneMoney,playerSplitTwoMoney,playerSplitThreeMoney,insuranceMoney,surrenderMoney;
     private int chipSelection,chipLocation;
-    private transient Button chip1,chip5,chip25,chip100,chip500,chip1000,chip10000,betChips,dealButton,repeat,previousArrow,freeChips;
-    private Circle middle;
-    private Rectangle left;
-    private Rectangle right;
+    private transient Button chip1,chip5,chip25,chip100,chip500,chip1000,chip10000,betChips,removeChips,dealButton,repeat,previousArrow,freeChips,doubleBetButton;
+    private Circle middle,left,right;
     private int direction;
 
     public ChipManager() {
 
-        chip1= new Button(67,67,62,580,Assets.chip1);
-        chip5= new Button(67,67,131 ,595,Assets.chip5);
-        chip25= new Button(67,67,200,605,Assets.chip25);
-        chip100 = new Button(67,67,269,610,Assets.chip100);
-        chip500= new Button(67,67,338,605,Assets.chip500);
-        chip1000=new Button(67,67,407,595,Assets.chip1000);
-        chip10000=new Button(67,67,476,580,Assets.chip10000);
-        betChips = new Button(64,64,101,510,Assets.addChips);
-        repeat = new Button(64,64,437,510,Assets.repeatBet);
-        dealButton = new Button(272,103,270,460,Assets.dealUnpressed);
+        chip1= new Button(128,128,75,240,Assets.chip1);
+        chip5= new Button(128,128,230 ,232,Assets.chip5);
+        chip25= new Button(128,128,385,224,Assets.chip25);
+        chip100 = new Button(128,128,540,220,Assets.chip100);
+        chip500= new Button(128,128,695,224,Assets.chip500);
+        chip1000=new Button(128,128,850,232,Assets.chip1000);
+        chip10000=new Button(128,128,1005,240,Assets.chip10000);
+        betChips = new Button(230,122,110,678,Assets.addChips);
+        removeChips=new Button(230,122,970,678,Assets.removeChips);
+        repeat = new Button(363,109,894,77,Assets.repeatBetButton);
+        doubleBetButton = new Button(363,109,186,77,Assets.doubleBetButton);
+        dealButton = new Button(756,277,540,920,Assets.dealButton);
         dealButton.setAlpha(0);
         freeChips = new Button(272,103,270,460,Assets.freeChips);
         freeChips.setAlpha(0);
-        previousArrow = new Button(64,64,508,130,Assets.previousArrow);
+        previousArrow = new Button(106,106,1000,1700,Assets.previousArrow);
         chipSelection=0;
         chipLocation=-1;
         money=500;
@@ -70,10 +70,11 @@ public class ChipManager  implements Serializable {
         sideBetLeft = new ArrayList<>();
         sideBetRight = new ArrayList<>();
         mainBet=new ArrayList<>();
-        middle = new Circle(270,230,75);
-        left = new Rectangle(160-46,230-73.5f,80,147);
-        right = new Rectangle(380-34,230-73.5f,80,147);
+        middle = new Circle(540,487,141);
+        left = new Circle(304,674,73);
+        right = new Circle(776,674,73);
         direction=BET;
+        removeChips.setAlpha(.2f);
     }
 
     public Button getChip1() {
@@ -106,7 +107,11 @@ public class ChipManager  implements Serializable {
 
     public Button getBetChips() { return betChips;}
 
+    public Button getRemoveChips() { return removeChips;}
+
     public Button getRepeat() { return repeat;}
+
+    public Button getDoubleBetButton() { return doubleBetButton;}
 
     public Button getDealButton() { return dealButton;}
 
@@ -227,11 +232,11 @@ public class ChipManager  implements Serializable {
         return sideBetRightChips;
     }
 
-    public Rectangle getLeft() {
+    public Circle getLeft() {
         return left;
     }
 
-    public Rectangle getRight() {
+    public Circle getRight() {
         return right;
     }
 
@@ -274,8 +279,8 @@ public class ChipManager  implements Serializable {
         }
         for(int i=0;i<chips.size();i++) {
             chips.get(i).move(.5f);
-            if(chips.get(i).getCurrentY()<=-50 || chips.get(i).getCurrentY()>=1100) {
-                if(chips.get(i).getCurrentY()<=-50 && chips.get(i).getMoneyChanged()==false) {
+            if(chips.get(i).getCurrentY()<=-100 || chips.get(i).getCurrentY()>=2200) {
+                if(chips.get(i).getCurrentY()<=-100 && chips.get(i).getMoneyChanged()==false) {
                     money+=chips.get(i).getValue();
                     chips.get(i).setMoneyChanged(true);
                 }
@@ -303,19 +308,21 @@ public class ChipManager  implements Serializable {
 
     public void updateButtons() {
         // ADD/REMOVE CHIPS
-        if(direction==BET && betChips.getScaleX()<1) {
-            betChips.setScaleX(betChips.getScaleX()+.2f);
-            if(betChips.getScaleX()>0)
-                betChips.setTextureRegion(Assets.addChips);
-            if(betChips.getScaleX()>1)
-                betChips.setScaleX(1);
+        if(direction==BET && betChips.getAlpha()<1) {
+            betChips.setAlpha(betChips.getAlpha()+.1f);
+            removeChips.setAlpha(1-betChips.getAlpha());
+            if(betChips.getAlpha()>1) {
+                betChips.setAlpha(1);
+                removeChips.setAlpha(.2f);
+            }
         }
-        else if(direction==REMOVE && betChips.getScaleX()>-1) {
-            betChips.setScaleX(betChips.getScaleX()-.2f);
-            if(betChips.getScaleX()<0)
-                betChips.setTextureRegion(Assets.removeChips);
-            if(betChips.getScaleX()<-1)
-                betChips.setScaleX(-1);
+        else if(direction==REMOVE && removeChips.getAlpha()<1) {
+            removeChips.setAlpha(removeChips.getAlpha()+.1f);
+            betChips.setAlpha(1-removeChips.getAlpha());
+            if(removeChips.getAlpha()>1) {
+                removeChips.setAlpha(1);
+                betChips.setAlpha(.2f);
+            }
         }
 
         //DEAL BUTTON
@@ -368,29 +375,28 @@ public class ChipManager  implements Serializable {
         float angle,h,x,y;
 
         if(selection<=2) {
-            x = (int) (Math.random() * 27)-13;
-            y = (int) (Math.random()* 103)-51;
+            h = (int) (Math.random() * 37);
         }
         else {
-            angle = (float) Math.random()*361;
-            h = (int) (Math.random() * 53);
-            x=(float)Math.cos(angle)*h;
-            y=(float)Math.sin(angle)*h;
+            h = (int) (Math.random() * 104);
         }
 
+        angle = (float) Math.random()*361;
+        x=(float)Math.cos(angle)*h;
+        y=(float)Math.sin(angle)*h;
         switch(selection) {
             case 1:
-                sideBetLeft.add(new Chip(loc,270,-16,149+x+(Math.abs(y)*.15f),230+y));
+                sideBetLeft.add(new Chip(loc,540,-16,304+x,674+y));
                 sideBetLeftChips[loc]++;
                 checkCreateChip(sideBetLeft,sideBetLeftChips,1,loc);
                 break;
             case 2:
-                sideBetRight.add(new Chip(loc,270,-16,391+x-(Math.abs(y)*.15f),230+y));
+                sideBetRight.add(new Chip(loc,540,-16,776+x,674+y));
                 sideBetRightChips[loc]++;
                 checkCreateChip(sideBetRight,sideBetRightChips,2,loc);
                 break;
             case 3:
-                mainBet.add(new Chip(loc,270,-16,270+x,230+y));
+                mainBet.add(new Chip(loc,540,-16,540+x,487+y));
                 mainBetChips[loc]++;
                 checkCreateChip(mainBet,mainBetChips,3,loc);
                 break;
@@ -403,29 +409,29 @@ public class ChipManager  implements Serializable {
         float angle,h,x,y;
 
         if(selection<=2) {
-            x = (int) (Math.random() * 27)-13;
-            y = (int) (Math.random()* 103)-51;
+            h = (int) (Math.random() * 37);
         }
         else {
-            angle = (float) Math.random()*361;
-            h = (int) (Math.random() * 53);
-            x=(float)Math.cos(angle)*h;
-            y=(float)Math.sin(angle)*h;
+            h = (int) (Math.random() * 104);
         }
+
+        angle = (float) Math.random()*361;
+        x=(float)Math.cos(angle)*h;
+        y=(float)Math.sin(angle)*h;
 
         switch(selection) {
             case 1:
-                sideBetLeft.add(index,new Chip(loc,270,-16,149+x+(Math.abs(y)*.15f),230+y));
+                sideBetLeft.add(new Chip(loc,540,-16,304+x,674+y));
                 sideBetLeftChips[loc]++;
                 checkCreateChip(sideBetLeft,sideBetLeftChips,1,loc);
                 break;
             case 2:
-                sideBetRight.add(index,new Chip(loc,270,-16,391+x-(Math.abs(y)*.15f),230+y));
+                sideBetRight.add(new Chip(loc,540,-16,776+x,674+y));
                 sideBetRightChips[loc]++;
                 checkCreateChip(sideBetRight,sideBetRightChips,2,loc);
                 break;
             case 3:
-                mainBet.add(index,new Chip(loc,270,-16,270+x,230+y));
+                mainBet.add(index,new Chip(loc,540,-16,540+x,487+y));
                 mainBetChips[loc]++;
                 checkCreateChip(mainBet,mainBetChips,3,loc);
                 break;
@@ -470,9 +476,11 @@ public class ChipManager  implements Serializable {
             case 1:
                 for(int j=0;j<create.length;j++) {
                     for(int k=create[j];k>0;k--) {
-                        x = (int) (Math.random() * 27)-13;
-                        y = (int) (Math.random()* 103)-51;
-                        sideBetLeft.add(new Chip(j, 269+((j-3)*69), 1000, 149 + x + (Math.abs(y) * .15f), 230 + y));
+                        angle = (float) Math.random()*361;
+                        h = (int) (Math.random() * 37);
+                        x=(float)Math.cos(angle)*h;
+                        y=(float)Math.sin(angle)*h;
+                        sideBetLeft.add(new Chip(j, 540+((j-3)*69), 2000, 304 + x, 674 + y));
                         sideBetLeftChips[j]++;
                     }
                 }
@@ -480,9 +488,11 @@ public class ChipManager  implements Serializable {
             case 2:
                 for(int j=0;j<create.length;j++) {
                     for(int k=create[j];k>0;k--) {
-                        x = (int) (Math.random() * 27)-13;
-                        y = (int) (Math.random()* 103)-51;
-                        sideBetRight.add(new Chip(j, 269+((j-3)*69), 1000, 391 + x - (Math.abs(y) * .15f), 230 + y));
+                        angle = (float) Math.random()*361;
+                        h = (int) (Math.random() * 37);
+                        x=(float)Math.cos(angle)*h;
+                        y=(float)Math.sin(angle)*h;
+                        sideBetRight.add(new Chip(j, 540+((j-3)*69), 2000, 776 + x, 674 + y));
                         sideBetRightChips[j]++;
                     }
                 }
@@ -491,10 +501,10 @@ public class ChipManager  implements Serializable {
                 for(int j=0;j<create.length;j++) {
                     for(int k=create[j];k>0;k--) {
                         angle = (float) Math.random()*361;
-                        h = (int) (Math.random() * 53);
+                        h = (int) (Math.random() * 104);
                         x=(float)Math.cos(angle)*h;
                         y=(float)Math.sin(angle)*h;
-                        mainBet.add(new Chip(j, 269+((j-3)*69), 1000, 270 + x, 230 + y));
+                        mainBet.add(new Chip(j, 540+((j-3)*69), 2000, 540 + x, 487 + y));
                         mainBetChips[j]++;
                     }
                 }
@@ -502,9 +512,9 @@ public class ChipManager  implements Serializable {
             case 4: //Directly to player chip pool from slot machine
                 for(int j=0;j<create.length;j++) {
                     for(int k=create[j];k>0;k--) {
-                        x=270;
+                        x=540;
                         y=-100;
-                        chips.add(new Chip(j,269+((j-3)*69) +(int)(Math.random()*128)-64,1000,x,y));
+                        chips.add(new Chip(j,540+((j-3)*69) +(int)(Math.random()*256)-128,2000,x,y));
                     }
                 }
         }
@@ -528,10 +538,10 @@ public class ChipManager  implements Serializable {
         for(int j=0;j<create.length;j++) {
             for(int k=create[j];k>0;k--) {
                 angle = (float) Math.random()*361;
-                h = (int) (Math.random() * 53);
+                h = (int) (Math.random() * 104);
                 x=(float)Math.cos(angle)*h;
                 y=(float)Math.sin(angle)*h;
-                mainBet.add(new Chip(j, 270, -16, 270 + x, 230 + y));
+                mainBet.add(new Chip(j, 540, -32, 540 + x, 487 + y));
                 mainBetChips[j]++;
             }
         }
@@ -541,10 +551,10 @@ public class ChipManager  implements Serializable {
     private void checkCreateChip(ArrayList<Chip> c,int[] list, int selection,int loc) {
         //remove 5 add 1 of next
         if(loc==0 || loc==1 || loc==3) {
-            if(list[loc]==11) {
+            if(list[loc]>=11) {
                 for(int i=0;list[loc]!=6;i++) {
                     if(c.get(i).getId()==loc) {
-                        c.get(i).setNewPos(270,-50);
+                        c.get(i).setNewPos(540,-100);
                         money+=c.get(i).getValue();
                         c.get(i).setMoneyChanged(true);
                         chips.add(c.get(i));
@@ -558,10 +568,10 @@ public class ChipManager  implements Serializable {
         }
         //remove 4 add 1
         else if(loc==2 || loc==4) {
-            if(list[loc]==11) {
+            if(list[loc]>=11) {
                 for(int i=0;list[loc]!=7;i++) {
                     if(c.get(i).getId()==loc) {
-                        c.get(i).setNewPos(270,-50);
+                        c.get(i).setNewPos(540,-100);
                         money+=c.get(i).getValue();
                         c.get(i).setMoneyChanged(true);
                         chips.add(c.get(i));
@@ -577,10 +587,10 @@ public class ChipManager  implements Serializable {
         }
         //remove 10 add 1
         else if(loc==5) {
-            if(list[loc]==11) {
+            if(list[loc]>=11) {
                 for(int i=0;list[loc]!=1;i++) {
                     if(c.get(i).getId()==loc) {
-                        c.get(i).setNewPos(270,-50);
+                        c.get(i).setNewPos(540,-100);
                         money+=c.get(i).getValue();
                         c.get(i).setMoneyChanged(true);
                         chips.add(c.get(i));
@@ -703,7 +713,7 @@ public class ChipManager  implements Serializable {
             //remove all chips
             case 0:
                 while(!c.isEmpty()) {
-                    c.get(0).setNewPos(270,-50);
+                    c.get(0).setNewPos(540,-100);
                     money+=c.get(0).getValue();
                     c.get(0).setMoneyChanged(true);
                     chips.add(c.get(0));
@@ -723,7 +733,7 @@ public class ChipManager  implements Serializable {
                         //finds a chip in the list with equal id
                         for(int i=0;i<c.size();i++) {
                             if(c.get(i).getId()==loc) {
-                                c.get(i).setNewPos(270,-50);
+                                c.get(i).setNewPos(540,-100);
                                 money+=c.get(i).getValue();
                                 c.get(i).setMoneyChanged(true);
                                 chips.add(c.get(i));
@@ -745,7 +755,7 @@ public class ChipManager  implements Serializable {
                         remaining=Math.abs(remaining-values[i]);
                         for(int j=0;j<c.size();j++) {
                             if(c.get(j).getId()==i) {
-                                c.get(j).setNewPos(270, -50);
+                                c.get(j).setNewPos(540, -100);
                                 money+=c.get(j).getValue();
                                 c.get(j).setMoneyChanged(true);
                                 chips.add(c.get(j));
@@ -819,7 +829,7 @@ public class ChipManager  implements Serializable {
             //remove all chips
             case 0:
                 while(!c.isEmpty()) {
-                    c.get(0).setNewPos(270,1100);
+                    c.get(0).setNewPos(540,2200);
                     chips.add(c.get(0));
                     c.remove(0);
                 }
@@ -837,7 +847,7 @@ public class ChipManager  implements Serializable {
                         //finds a chip in the list with equal id
                         for(int i=0;i<c.size();i++) {
                             if(c.get(i).getId()==loc) {
-                                c.get(i).setNewPos(270,1100);
+                                c.get(i).setNewPos(540,2200);
                                 chips.add(c.get(i));
                                 c.remove(i);
                                 i=c.size();
@@ -857,7 +867,7 @@ public class ChipManager  implements Serializable {
                         remaining=Math.abs(remaining-values[i]);
                         for(int j=0;j<c.size();j++) {
                             if(c.get(j).getId()==i) {
-                                c.get(j).setNewPos(270, 1100);
+                                c.get(j).setNewPos(540, 2200);
                                 chips.add(c.get(j));
                                 c.remove(j);
                                 j=c.size();
@@ -907,7 +917,7 @@ public class ChipManager  implements Serializable {
 
     private void remove(ArrayList<Chip> c, int[] list) {
         while(!c.isEmpty()) {
-            c.get(0).setNewPos(270,-50);
+            c.get(0).setNewPos(540,-100);
             chips.add(c.get(0));
             c.remove(0);
         }
@@ -938,7 +948,7 @@ public class ChipManager  implements Serializable {
                 } else if (r[i] < c[i]) {
                     for (int j = 0; j < list.size(); j++) {
                         if (list.get(j).getId() == i) {
-                            list.get(j).setNewPos(270, -50);
+                            list.get(j).setNewPos(540, -100);
                             chips.add(list.get(j));
                             list.remove(j);
                             j = list.size();
@@ -988,8 +998,8 @@ public class ChipManager  implements Serializable {
         chip1000=new Button(67,67,407,595,Assets.chip1000);
         chip10000=new Button(67,67,476,580,Assets.chip10000);
         betChips = new Button(64,64,101,510,Assets.addChips);
-        repeat = new Button(64,64,437,510,Assets.repeatBet);
-        dealButton = new Button(272,103,270,460,Assets.dealUnpressed);
+        repeat = new Button(64,64,437,510,Assets.repeatBetButton);
+        dealButton = new Button(272,103,270,460,Assets.dealButton);
         dealButton.setAlpha(0);
         freeChips = new Button(272,103,270,460,Assets.freeChips);
         freeChips.setAlpha(0);

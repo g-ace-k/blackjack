@@ -48,7 +48,7 @@ public class Texture  implements Serializable {
             height = bitmap.getHeight();
             gl.glBindTexture(GL10.GL_TEXTURE_2D,textureId);
             GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
-            setFilters(GL10.GL_NEAREST, GL10.GL_NEAREST);
+            setFilters(GL10.GL_LINEAR, GL10.GL_LINEAR);
             gl.glBindTexture(GL10.GL_TEXTURE_2D,0);
         } catch(IOException e) {
             throw new RuntimeException("Couldnt load texture '" + fileName + "'",e);

@@ -10,6 +10,8 @@ import java.util.ArrayList;
  * Created by Michael on 2/6/2017.
  */
 
+// NEEDS WORK
+
 public class ParticleGroup  implements Serializable {
 
     static final int CIRCLE=1;
@@ -139,7 +141,9 @@ public class ParticleGroup  implements Serializable {
             particle.setA(particle.getA()-1/time);
             if(particle.getA()<=0)
                 particles.remove(i);
+            
         }
+
 
         glGraphics.getGl().glColor4f(1,1,1,1);
 

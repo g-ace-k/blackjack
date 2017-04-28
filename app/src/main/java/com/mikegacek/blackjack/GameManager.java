@@ -19,7 +19,7 @@ public class GameManager  implements Serializable{
     public ArrayList<Card> playerSplitThree;
     public int cardsPos,cardsSplitOnePos,cardsSplitTwoPos,cardsSplitThreePos;
     public ArrayList<Card> dealerCards;
-    public Button hitButton,standButton,doubleButton,splitButton,surrenderButton,check,uncheck,menu,settings,rules,freeChips,sound,hintButton,playButton;
+    public Button hitButton,standButton,doubleButton,splitButton,surrenderButton,yes,no,menu,settings,rules,freeChips,sound,hintButton,playButton;
     //state 0=check dealer for blackjack,1=player main hand, 2=player split one, 3=player split 2, 4=player split 3, 5=dealer, 6=after dealer done drawing, 7=player surrender, 8=everything finished
     public int state,hands,waitTime=30;
     public boolean playerBJ,leftFlag;
@@ -48,22 +48,22 @@ public class GameManager  implements Serializable{
         cardsPos=1;
         cardsSplitOnePos=2;
         cardsSplitTwoPos=3;
-        cardsSplitThreePos=4;
+        cardsSplitThreePos=4; //894,77 186,77
         dealerCards = new ArrayList<>(15);
-        hitButton = new Button(150,50,85,-100);
-        standButton = new Button(150,50,455,-100);
-        doubleButton = new Button(150,100,110,-100);
-        splitButton = new Button(150,100,430,-100);
-        surrenderButton = new Button(150,100,270,-100);
-        hintButton= new Button(64,64,500,920);
-        playButton= new Button(64,64,500,848);
+        hitButton = new Button(363,109,186,-100,Assets.hitButton);
+        standButton = new Button(363,109,894,-100,Assets.standButton);
+        doubleButton = new Button(363,145,186,-100,Assets.doubleButton);
+        splitButton = new Button(363,145,894,-100,Assets.splitButton);
+        surrenderButton = new Button(330,145,540,-100,Assets.surrenderButton);
+        hintButton= new Button(99,99,60,1840,Assets.hint);
+        playButton= new Button(99,99,60,1720,Assets.play);
         settings= new Button(286,78,-500,700,Assets.settingsButton);
         rules = new Button(286,78,-400,615,Assets.rulesButton);
         freeChips=new Button(286,78,-300,530,Assets.freeChipsButton);
         sound= new Button(286,78,-200,445,Assets.soundOnButton);
-        check=new Button(75,75,85,40);
-        uncheck=new Button(75,75,455,40);
-        menu = new Button(104,27,93,40);
+        yes=new Button(150,82,326,1093,Assets.yes);
+        no=new Button(133,82,760,1093,Assets.no);
+        menu = new Button(99,99,60,1840,Assets.menuButton);
         int card=0;
         playerBust=false;
         playerBJ=false;
@@ -78,7 +78,7 @@ public class GameManager  implements Serializable{
             if(i<26) {
                 shuffling.add(i, new Card(card % 52 + 1));
                 shuffling.get(i).setVisable(false);
-                shuffling.get(i).setCurrentPos(-60, 940);
+                shuffling.get(i).setCurrentPos(-120, 1880);
             }
         }
 
@@ -163,38 +163,38 @@ public class GameManager  implements Serializable{
             case 2:
                 addPlayerSplitOne();
                 for(Card card: playerSplitOne) {
-                    xPos=-16*size+286;
-                    card.setNewPos(xPos+(count-1)*32,400);
+                    xPos=-32*size+572;
+                    card.setNewPos(xPos+(count-1)*64,800);
                     count++;
                 }
                 break;
             case 3:
                 addPlayerSplitTwo();
                 for(Card card: playerSplitTwo) {
-                    xPos=-16*size+286;
-                    card.setNewPos(xPos+(count-1)*32,400);
+                    xPos=-32*size+572;
+                    card.setNewPos(xPos+(count-1)*64,800);
                     count++;
                 }
                 break;
             case 4:
                 addPlayerSplitThree();
                 for(Card card: playerSplitThree) {
-                    xPos=-16*size+286;
-                    card.setNewPos(xPos+(count-1)*32,400);
+                    xPos=-32*size+572;
+                    card.setNewPos(xPos+(count-1)*64,800);
                     count++;
                 }
                 break;
             default:
                 addPlayerCard();
                 for(Card card: playerCards) {
-                    xPos=-16*size+286;
-                    card.setNewPos(xPos+(count-1)*32,400);
+                    xPos=-32*size+572;
+                    card.setNewPos(xPos+(count-1)*64,800);
                     count++;
                 }
                 break;
         }
         if(playerCards.size()>2)
-            surrenderButton.setNewPos(270,-100);
+            surrenderButton.setNewPos(540,-100);
     }
 
     public void addPlayerCard() {
@@ -242,8 +242,8 @@ public class GameManager  implements Serializable{
         int xPos;
 
         for(Card card:dealerCards) {
-            xPos=-16*size+286;
-            card.setNewPos(xPos + (count - 1) * 32, 780);
+            xPos=-32*size+572;
+            card.setNewPos(xPos + (count - 1) * 64, 1560);
             count++;
         }
 
@@ -274,7 +274,7 @@ public class GameManager  implements Serializable{
 
     public void resetShuffling() {
         for(int i=0;i<shuffling.size();i++) {
-            shuffling.get(i).setCurrentPos(-60,940);
+            shuffling.get(i).setCurrentPos(-120,1880);
             shuffling.get(i).setSpeed(.4f);
         }
         shuffleInProgress=false;
@@ -289,16 +289,16 @@ public class GameManager  implements Serializable{
         moveSplitCards(playerSplitThree,cardsSplitThreePos);
 
         for(Card card:playerCards) {
-            card.moveAndScale(.5f);
+            card.moveAndScale(.75f);
         }
         for(Card card:playerSplitOne) {
-            card.moveAndScale(.5f);
+            card.moveAndScale(.75f);
         }
         for(Card card:playerSplitTwo) {
-            card.moveAndScale(.5f);
+            card.moveAndScale(.75f);
         }
         for(Card card:playerSplitThree) {
-            card.moveAndScale(.5f);
+            card.moveAndScale(.75f);
         }
         updateShuffling();
     }
@@ -309,24 +309,24 @@ public class GameManager  implements Serializable{
         int xPos;
 
         for(Card card:dealerCards) {
-            xPos=-16*size+286;
-            card.setNewPos(xPos + (count - 1) * 32, 780);
+            xPos=-32*size+572;
+            card.setNewPos(xPos + (count - 1) * 64, 1560);
             count++;
         }
     }
 
     public void updateFinishedPlayer() {
         for(Card card:playerCards) {
-            card.move(.5f);
+            card.move(.75f);
         }
         for(Card card:playerSplitOne) {
-            card.move(.5f);
+            card.move(.75f);
         }
         for(Card card:playerSplitTwo) {
-            card.move(.5f);
+            card.move(.75f);
         }
         for(Card card:playerSplitThree) {
-            card.move(.5f);
+            card.move(.75f);
         }
         updateShuffling();
     }
@@ -334,7 +334,7 @@ public class GameManager  implements Serializable{
 
     public void updateDealerCards() {
         for(Card card:dealerCards) {
-            card.move(.5f);
+            card.move(.75f);
         }
     }
 
@@ -380,15 +380,15 @@ public class GameManager  implements Serializable{
                         settingsManager.setPlayerBlackjacks(settingsManager.getPlayerBlackjacks()+1);
                     }
                     insurance=false;
-                    surrenderButton.setNewPos(270,-100);
+                    surrenderButton.setNewPos(540,-100);
                 }
                 else {
                     state=1;
                     insurance=false;
-                    hitButton.setNewPos(85,42);
-                    standButton.setNewPos(455,42);
+                    hitButton.setNewPos(186,77);
+                    standButton.setNewPos(894,77);
                     if(settingsManager.getSurrender()==true)
-                        surrenderButton.setNewPos(270,72);
+                        surrenderButton.setNewPos(540,150);
                 }
                 break;
             //checks for if player hits 21 or is over
@@ -410,7 +410,7 @@ public class GameManager  implements Serializable{
                 }
                 else {
                     doubleButton.setNewPos(110,-100);
-                    splitButton.setNewPos(430,-100);
+                    splitButton.setNewPos(894,-100);
                     if(hitButton.getNewY()==-100)
                         changeHand();
                 }
@@ -428,8 +428,8 @@ public class GameManager  implements Serializable{
                     addCard();
                 }
                 else {
-                    doubleButton.setNewPos(110,-100);
-                    splitButton.setNewPos(430,-100);
+                    doubleButton.setNewPos(186,-100);
+                    splitButton.setNewPos(894,-100);
                     if(hitButton.getNewY()==-100)
                         changeHand();
                 }
@@ -447,8 +447,8 @@ public class GameManager  implements Serializable{
                     addCard();
                 }
                 else {
-                    doubleButton.setNewPos(110,-100);
-                    splitButton.setNewPos(430,-100);
+                    doubleButton.setNewPos(186,-100);
+                    splitButton.setNewPos(894,-100);
                     if(hitButton.getNewY()==-100)
                         changeHand();
                 }
@@ -466,8 +466,8 @@ public class GameManager  implements Serializable{
                     addCard();
                 }
                 else {
-                    doubleButton.setNewPos(110,-100);
-                    splitButton.setNewPos(430,-100);
+                    doubleButton.setNewPos(186,-100);
+                    splitButton.setNewPos(894,-100);
                     if(hitButton.getNewY()==-100 && doubleButton.getNewY()==-100 && splitButton.getNewY()==-100)
                         changeHand();
                 }
@@ -476,10 +476,10 @@ public class GameManager  implements Serializable{
             case 6:
             case 7:
             case 8:
-                hitButton.setNewPos(85,-100);
-                standButton.setNewPos(455,-100);
-                doubleButton.setNewPos(110,-100);
-                splitButton.setNewPos(430,-100);
+                hitButton.setNewPos(186,-100);
+                standButton.setNewPos(894,-100);
+                doubleButton.setNewPos(186,-100);
+                splitButton.setNewPos(894,-100);
                 moveDealerDownCard();
                 if(dealerCards.get(1).getVisable()==true) {
                     if(Math.abs(calcHand(dealerCards))<17 && getPlayerBust()==false && playerBJ==false && settingsManager.getDealer()==1) {
@@ -508,7 +508,7 @@ public class GameManager  implements Serializable{
 
     public void changeHand() {
         state++;
-        surrenderButton.setNewPos(270,-100);
+        surrenderButton.setNewPos(540,-100);
         if(state==2 && playerSplitOne.size()==0)
             state=5;
         else if(state==3 && playerSplitTwo.size()==0)
@@ -542,33 +542,33 @@ public class GameManager  implements Serializable{
         //1=any 2 2=9-11 only 3=10-11 only
         //Checks the double down rule
         if(settingsManager.getDas()==false && hands>1) //double after split rule
-            doubleButton.setNewPos(110,-100);
+            doubleButton.setNewPos(186,-100);
         else if(settingsManager.getDoubleAces()==false && hands>1 && tempCard1==1) //double aces rule
-            doubleButton.setNewPos(110,-100);
+            doubleButton.setNewPos(186,-100);
         else if(settingsManager.getDoubleDown()==2 && tempCard1+tempCard2>=9 && tempCard1+tempCard2<=11 && tempCard1!=1 && tempCard2!=1) //9-11 rule
-            doubleButton.setNewPos(110,78);
+            doubleButton.setNewPos(186,170);
         else if(settingsManager.getDoubleDown()==3 && tempCard1+tempCard2>=10 && tempCard1+tempCard2<=11 && tempCard1!=1 && tempCard2!=1) //10-11 rule
-            doubleButton.setNewPos(110,78);
+            doubleButton.setNewPos(186,170);
         else if(settingsManager.getDoubleDown()==1) //any 2 rule
-            doubleButton.setNewPos(110,78);
+            doubleButton.setNewPos(186,170);
         else
-            doubleButton.setNewPos(110,-100); //no allowable double down found
+            doubleButton.setNewPos(186,-100); //no allowable double down found
 
 
 
         //Checks for maximum split hands
         if((tempCard1==tempCard2 && hands!=settingsManager.getSplitHands())) {
             if(settingsManager.getResplit()==false && tempCard1==1 && hands>1) //resplit aces rule
-                splitButton.setNewPos(430,-100);
+                splitButton.setNewPos(894,-100);
             else
-                splitButton.setNewPos(430,78);
+                splitButton.setNewPos(894,170);
         }
         else
-            splitButton.setNewPos(430,-100);
+            splitButton.setNewPos(894,-100);
     }
 
     public void addDouble() {
-        surrenderButton.setNewPos(270,-100);
+        surrenderButton.setNewPos(540,-100);
         settingsManager.setDoubleDownTotal(settingsManager.getDoubleDownTotal()+1);
         switch (state) {
             case 1:
@@ -608,7 +608,7 @@ public class GameManager  implements Serializable{
     }
 
     public void addSplit() {
-        surrenderButton.setNewPos(270,-100);
+        surrenderButton.setNewPos(540,-100);
         int tempCard1,tempCard2;
         settingsManager.setSplitsTotal(settingsManager.getSplitsTotal()+1);
         switch (state) {
@@ -622,7 +622,7 @@ public class GameManager  implements Serializable{
                     if(tempCard2>10)
                         tempCard2=10;
                     if(tempCard1==1 && settingsManager.getHitAces()==false)
-                        hitButton.setNewPos(85,-100);
+                        hitButton.setNewPos(186,-100);
                     if(tempCard1==tempCard2) {
                         chipManager.doubleBet(chipManager.getPlayerHandMoney());
                         switch (hands) {
@@ -729,9 +729,9 @@ public class GameManager  implements Serializable{
     public void moveDealerDownCard() {
 
         if(dealerCards.get(1).getVisable()==false)
-            dealerCards.get(1).setNewPos(360,780);
-        else if(dealerCards.get(1).getNewX()==360 || dealerCards.get(1).getNewX()==286)
-            dealerCards.get(1).setNewPos(286,780);
+            dealerCards.get(1).setNewPos(720,1560);
+        else if(dealerCards.get(1).getNewX()==720 || dealerCards.get(1).getNewX()==572)
+            dealerCards.get(1).setNewPos(572,1560);
         dealerCards.get(1).flipCard();
     }
 
@@ -745,7 +745,7 @@ public class GameManager  implements Serializable{
         boolean flag=false;
         int count=1;
         int size=list.size();
-        int offset=18-size;
+        int offset=36-size;
         int halfOffset=offset/2;
         int xPos;
         //adjust if position=0
@@ -774,55 +774,55 @@ public class GameManager  implements Serializable{
         switch(position) {
             case 1:
                 for(Card card:list) {
-                    xPos=-16*size+286;
-                    card.setNewScaleX(1);
-                    card.setNewScaleY(1);
-                    card.setNewPos(xPos+(count-1)*32,400);
+                    xPos=-32*size+572;
+                    card.setNewScaleX(4f/3f);
+                    card.setNewScaleY(4f/3f);
+                    card.setNewPos(xPos+(count-1)*64,800);
                     count++;
                 }
                  break;
             case 2:
                 for(Card card:list) {
-                    xPos=-halfOffset*size+135+halfOffset;
-                    card.setNewScaleX(.5f);
-                    card.setNewScaleY(.5f);
-                    card.setNewPos(xPos+(count-1)*offset,550);
+                    xPos=-halfOffset*size+270+halfOffset;
+                    card.setNewScaleX(.75f);
+                    card.setNewScaleY(.75f);
+                    card.setNewPos(xPos+(count-1)*offset,1100);
                     count++;
                 }
                 break;
             case 3:
                 for(Card card:list) {
-                    xPos=-halfOffset*size+270+halfOffset;
-                    card.setNewScaleX(.5f);
-                    card.setNewScaleY(.5f);
-                    card.setNewPos(xPos+(count-1)*offset,550);
+                    xPos=-halfOffset*size+540+halfOffset;
+                    card.setNewScaleX(.75f);
+                    card.setNewScaleY(.75f);
+                    card.setNewPos(xPos+(count-1)*offset,1100);
                     count++;
                 }
                 break;
             case 4:
                 for(Card card:list) {
-                    xPos=-halfOffset*size+405+halfOffset;
-                    card.setNewScaleX(.5f);
-                    card.setNewScaleY(.5f);
-                    card.setNewPos(xPos+(count-1)*offset,550);
+                    xPos=-halfOffset*size+810+halfOffset;
+                    card.setNewScaleX(.75f);
+                    card.setNewScaleY(.75f);
+                    card.setNewPos(xPos+(count-1)*offset,1100);
                     count++;
                 }
                 break;
             case 5:
                 for(Card card:list) {
-                    xPos=-halfOffset*size+180+halfOffset;
-                    card.setNewScaleX(.5f);
-                    card.setNewScaleY(.5f);
-                    card.setNewPos(xPos+(count-1)*offset,550);
+                    xPos=-halfOffset*size+360+halfOffset;
+                    card.setNewScaleX(.75f);
+                    card.setNewScaleY(.75f);
+                    card.setNewPos(xPos+(count-1)*offset,1100);
                     count++;
                 }
                 break;
             case 6:
                 for(Card card:list) {
-                    xPos=-halfOffset*size+360+halfOffset;
-                    card.setNewScaleX(.5f);
-                    card.setNewScaleY(.5f);
-                    card.setNewPos(xPos+(count-1)*offset,550);
+                    xPos=-halfOffset*size+720+halfOffset;
+                    card.setNewScaleX(.75f);
+                    card.setNewScaleY(.75f);
+                    card.setNewPos(xPos+(count-1)*offset,1100);
                     count++;
                 }
                 break;
@@ -835,7 +835,7 @@ public class GameManager  implements Serializable{
         Assets.multiChips.play(MainScreen.sound);
         state=7;
         settingsManager.setSurrenderTotal(settingsManager.getSurrenderTotal()+1);
-        surrenderButton.setNewPos(270,-100);
+        surrenderButton.setNewPos(540,-100);
         surrender=true;
         playerBust=true;
         int originalBet=chipManager.getMainBetMoney()-chipManager.getInsuranceMoney();
@@ -967,7 +967,7 @@ public class GameManager  implements Serializable{
             }
             Assets.shuffle.play(MainScreen.sound);
             for(Card card:shuffling) {
-                card.setNewPos(1060, 940);
+                card.setNewPos(2120, 1880);
             }
             for(Card card:playerCards) {
                 cards.add(0,card);
@@ -1014,7 +1014,7 @@ public class GameManager  implements Serializable{
         if(settingsManager.getCSM()==false) {
             Assets.shuffle.play(MainScreen.sound);
             for (Card card : shuffling) {
-                card.setNewPos(1060, 940);
+                card.setNewPos(2120, 1880);
             }
             shuffleInProgress = true;
         }
@@ -1022,19 +1022,19 @@ public class GameManager  implements Serializable{
 
     public void cardsToDiscard() {
         for(Card card: playerCards) {
-            card.setNewPos(-100,940);
+            card.setNewPos(-200,1880);
         }
         for(Card card: playerSplitOne) {
-            card.setNewPos(-100,940);
+            card.setNewPos(-200,1880);
         }
         for(Card card: playerSplitTwo) {
-            card.setNewPos(-100,940);
+            card.setNewPos(-200,1880);
         }
         for(Card card: playerSplitThree) {
-            card.setNewPos(-100,940);
+            card.setNewPos(-200,1880);
         }
         for(Card card: dealerCards) {
-            card.setNewPos(-100,940);
+            card.setNewPos(-200,1880);
         }
     }
 
@@ -1084,11 +1084,11 @@ public class GameManager  implements Serializable{
         if (takeInsurance) {
             chipManager.doubleBet(chipManager.getMainBetMoney()/2);
             chipManager.setInsuranceMoney(chipManager.getMainBetMoney()/2);
-            surrenderButton.setNewPos(270,72);
+            surrenderButton.setNewPos(540,150);
         }
         else {
             insurance=false;
-            surrenderButton.setNewPos(270,72);
+            surrenderButton.setNewPos(540,150);
         }
 
         if(Math.abs(calcHand(dealerCards))==21) {
@@ -1097,12 +1097,12 @@ public class GameManager  implements Serializable{
             if(Math.abs(calcHand(playerCards))==21 && playerCards.size()==2 && playerSplitOne.size()==0) {
                 settingsManager.setPlayerBlackjacks(settingsManager.getPlayerBlackjacks()+1);
             }
-            surrenderButton.setNewPos(270,-100);
+            surrenderButton.setNewPos(540,-100);
         }
         else {
             state=1;
-            hitButton.setNewPos(85,42);
-            standButton.setNewPos(455,42);
+            hitButton.setNewPos(186,77);
+            standButton.setNewPos(894,77);
         }
     }
 
