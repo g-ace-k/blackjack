@@ -51,7 +51,7 @@ public class ChipManager  implements Serializable {
         dealButton.setAlpha(0);
         freeChips = new Button(272,103,270,460,Assets.freeChips);
         freeChips.setAlpha(0);
-        previousArrow = new Button(106,106,1000,1700,Assets.previousArrow);
+        previousArrow = new Button(128,128,1000,1700,Assets.previousArrow);
         chipSelection=0;
         chipLocation=-1;
         money=500;
@@ -310,7 +310,8 @@ public class ChipManager  implements Serializable {
         // ADD/REMOVE CHIPS
         if(direction==BET && betChips.getAlpha()<1) {
             betChips.setAlpha(betChips.getAlpha()+.1f);
-            removeChips.setAlpha(1-betChips.getAlpha());
+            if(removeChips.getAlpha()>.2f)
+                removeChips.setAlpha(1-betChips.getAlpha());
             if(betChips.getAlpha()>1) {
                 betChips.setAlpha(1);
                 removeChips.setAlpha(.2f);
@@ -318,7 +319,8 @@ public class ChipManager  implements Serializable {
         }
         else if(direction==REMOVE && removeChips.getAlpha()<1) {
             removeChips.setAlpha(removeChips.getAlpha()+.1f);
-            betChips.setAlpha(1-removeChips.getAlpha());
+            if(betChips.getAlpha()>.2f)
+                betChips.setAlpha(1-removeChips.getAlpha());
             if(removeChips.getAlpha()>1) {
                 removeChips.setAlpha(1);
                 betChips.setAlpha(.2f);
@@ -1003,7 +1005,7 @@ public class ChipManager  implements Serializable {
         dealButton.setAlpha(0);
         freeChips = new Button(272,103,270,460,Assets.freeChips);
         freeChips.setAlpha(0);
-        previousArrow = new Button(64,64,508,130,Assets.previousArrow);
+        previousArrow = new Button(128,128,1000,1700,Assets.previousArrow);
 
         for(Chip chip: chips) {
             chip.loadTexture();

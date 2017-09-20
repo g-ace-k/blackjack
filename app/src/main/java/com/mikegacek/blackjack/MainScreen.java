@@ -98,7 +98,6 @@ public class MainScreen extends GLScreen {
             chipManager.setMoney(sharedPreferences.getInt("com.blackjack.money",500));
         }
 
-
     }
     @Override
     public void update(float deltaTime) {
@@ -414,7 +413,7 @@ public class MainScreen extends GLScreen {
                     Assets.button.play(sound);
                     gameManager.addSplit();
                 }
-                else if(OverlapTester.pointInUpperHalfRectangle(gameManager.surrenderButton,touchPoint) && gameManager.surrenderButton.getYPos()==72) {
+                else if(OverlapTester.pointInUpperHalfRectangle(gameManager.surrenderButton,touchPoint) && gameManager.surrenderButton.getYPos()==150) {
                     Assets.button.play(sound);
                     gameManager.surrender();
                 }
@@ -729,6 +728,20 @@ public class MainScreen extends GLScreen {
 
                         public void positiveButtonPress() {
                             settingsManager.setChangeSideBets(true);
+                            //change tableSettingsTextures
+                            if(settingsManager.getBlackjackPays()==1.5)
+                                Assets.blackjackPayout.changeValues(0,0,817,54);
+                            else if(settingsManager.getBlackjackPays()==1.4)
+                                Assets.blackjackPayout.changeValues(0,54,817,54);
+                            else if(settingsManager.getBlackjackPays()==1.2)
+                                Assets.blackjackPayout.changeValues(0,108,817,54);
+                            else
+                                Assets.blackjackPayout.changeValues(0,162,817,54);
+
+                            if(settingsManager.getDealer()==1) //stand soft 17
+                                Assets.dealerSetting.changeValues(0,390,1080,174);
+                            else //hit soft 17
+                                Assets.dealerSetting.changeValues(0,216,1080,174);
                             //save settings
                             state=GAME_BETTING;
                             editor.putInt("com.blackjack.state",state);
@@ -917,6 +930,7 @@ public class MainScreen extends GLScreen {
 
         if(settingsManager.getNewDeck()==true) {
             settingsManager.setNewDeck(false);
+
             gameManager.newDeck();
         }
         if(settingsManager.getChangeSideBets()==true) {
@@ -941,6 +955,7 @@ public class MainScreen extends GLScreen {
         }
 
         gameRenderer.render(state);
+
 
         switch(state) {
             case GAME_BETTING:
@@ -1044,6 +1059,20 @@ public class MainScreen extends GLScreen {
 
                 public void positiveButtonPress() {
                     settingsManager.setChangeSideBets(true);
+                    //change tableSettingsTextures
+                    if(settingsManager.getBlackjackPays()==1.5)
+                        Assets.blackjackPayout.changeValues(0,0,817,54);
+                    else if(settingsManager.getBlackjackPays()==1.4)
+                        Assets.blackjackPayout.changeValues(0,54,817,54);
+                    else if(settingsManager.getBlackjackPays()==1.2)
+                        Assets.blackjackPayout.changeValues(0,108,817,54);
+                    else
+                        Assets.blackjackPayout.changeValues(0,162,817,54);
+
+                    if(settingsManager.getDealer()==1) //stand soft 17
+                        Assets.dealerSetting.changeValues(0,390,1080,174);
+                    else //hit soft 17
+                        Assets.dealerSetting.changeValues(0,216,1080,174);
                     //save settings
                     state=GAME_BETTING;
                     editor.putInt("com.blackjack.state",state);

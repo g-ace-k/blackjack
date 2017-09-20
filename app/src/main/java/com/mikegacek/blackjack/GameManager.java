@@ -1,5 +1,7 @@
 package com.mikegacek.blackjack;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -250,12 +252,13 @@ public class GameManager  implements Serializable{
     }
 
     public void updateShuffling() {
+
         if(shuffleInProgress) {
             shufflingWaitTime++;
             for(int i=0;i<shuffling.size();i++) {
                 if(shufflingWaitTime>i*2) {
                     shuffling.get(i).move(shuffling.get(i).getSpeed());
-                    if(shuffling.get(i).getSpeed()>.09f)
+                    if(shuffling.get(i).getSpeed()>.15f)
                         shuffling.get(i).setSpeed(shuffling.get(i).getSpeed()-.012f);
                 }
                 else {
@@ -275,7 +278,7 @@ public class GameManager  implements Serializable{
     public void resetShuffling() {
         for(int i=0;i<shuffling.size();i++) {
             shuffling.get(i).setCurrentPos(-120,1880);
-            shuffling.get(i).setSpeed(.4f);
+            shuffling.get(i).setSpeed(.5f);
         }
         shuffleInProgress=false;
         shufflingWaitTime=0;
@@ -1001,6 +1004,7 @@ public class GameManager  implements Serializable{
         for(int i=0;i<52*settingsManager.getDecks();i++,card++) {
             cards.add(i,new Card(card%52+1));
         }
+        Assets.meterDecks.changeValues((settingsManager.getDecks()-1)*29,41,29,40);
         shuffle();
         pointer=0;
     }
@@ -1013,6 +1017,7 @@ public class GameManager  implements Serializable{
         pointer=0;
         if(settingsManager.getCSM()==false) {
             Assets.shuffle.play(MainScreen.sound);
+            resetShuffling();
             for (Card card : shuffling) {
                 card.setNewPos(2120, 1880);
             }

@@ -23,7 +23,6 @@ public class Card implements Serializable {
     private float speed;
 
     public Card(int value) {
-        value=(int)(Math.random()*2)+13;
         this.suit=(value-1)/13;
         this.value=value%13;
         if(this.value==0)
@@ -43,7 +42,7 @@ public class Card implements Serializable {
         this.newY=2120;
         this.newScaleX=this.scaleX;
         this.newScaleY=this.scaleY;
-        this.speed=.4f;
+        this.speed=.5f;
     }
 
     public void invertVisable() {
@@ -136,6 +135,15 @@ public class Card implements Serializable {
 
     public int getValue() {
         return value;
+    }
+
+    //For debug purposes only
+    public void setValue(int value) {
+        this.suit=(value-1)/13;
+        this.value=value%13;
+        if(this.value==0)
+            this.value=13;
+        this.texture= new TextureRegion(Assets.cards,(this.value-1)*150,(this.suit)*210,150,210);
     }
 
     public int getSuit() {return suit;}
@@ -282,8 +290,8 @@ public class Card implements Serializable {
         rotation=0;
         oldScaleX=4f/3f;
         oldScaleY=4f/3f;
-        scaleX=1;
-        scaleY=1;
+        scaleX=4f/3f;
+        scaleY=4f/3f;
         visable=true;
         oldX=1280;
         oldY=2120;
@@ -291,8 +299,8 @@ public class Card implements Serializable {
         currentY=2120;
         newX=1280;
         newY=2120;
-        newScaleX=1;
-        newScaleY=1;
+        newScaleX=4f/3f;
+        newScaleY=4f/3f;
     }
 
 }

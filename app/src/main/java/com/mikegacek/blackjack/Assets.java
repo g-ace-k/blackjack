@@ -28,6 +28,7 @@ public class Assets implements Serializable{
     public static Texture menu;
     public static Texture settingsFont;
     public static Texture calibriText;
+    public static Texture shoeMeter;
 
     public static TextureRegion green;
     public static TextureRegion blue;
@@ -91,6 +92,13 @@ public class Assets implements Serializable{
     public static TextureRegion highlightRed;
     public static TextureRegion exit;
 
+    public static TextureRegion meterText;
+    public static TextureRegion meterDecks;
+    public static TextureRegion meter;
+    public static TextureRegion meterStop;
+    public static TextureRegion meterBackground;
+    public static TextureRegion meterFilled;
+
     public static Sound slotMachineSpinner;
     public static Sound winningBet;
     public static Sound multiChips;
@@ -105,21 +113,23 @@ public class Assets implements Serializable{
 
 
 
-    public static Texture testregion;
-    public static TextureRegion test;
+    public static Texture tableSettings;
+    public static TextureRegion blackjackPayout;
+    public static TextureRegion dealerSetting;
 
     public static void load(GLGame game) {
 
         calibriText= new Texture(game,"calibriText.png");
 
-        testregion=new Texture(game,"testbackground.png");
-        test=new TextureRegion(testregion,0,0,1080,1920);
+        tableSettings=new Texture(game,"tableSettings.png");
+        blackjackPayout=new TextureRegion(tableSettings,0,0,817,54); // this is for 3:2 payout
+        dealerSetting = new TextureRegion(tableSettings,0,390,1080,174);// this is for dealer stand on all 17
 
-        background = new Texture(game, "greenBackground.png");
+        background = new Texture(game, "redBackground.png");
         green = new TextureRegion(background, 0, 0, 1080, 1920);
-        blue = new TextureRegion(background, 540, 0, 540, 960);
-        red = new TextureRegion(background, 1080, 0, 540, 960);
-        purple = new TextureRegion(background, 1620, 0, 540, 960);
+        blue = new TextureRegion(background, 0, 0, 1080, 1920);
+        red = new TextureRegion(background, 0, 0, 1080, 1920);
+        purple = new TextureRegion(background, 0, 0, 1080, 1920);
 
         settingsFont = new Texture(game, "settingsFont2.png");
         settingsHit = new TextureRegion(settingsFont, 0, 64, 82, 42);
@@ -167,7 +177,7 @@ public class Assets implements Serializable{
         repeatBetButton = new TextureRegion(buttons,0,1316,363,109);
         addChips = new TextureRegion(buttons, 483, 554, 252, 122);
         removeChips = new TextureRegion(buttons, 483, 676,252, 122);
-        previousArrow = new TextureRegion(buttons, 363, 798, 106, 106);
+        previousArrow = new TextureRegion(buttons, 363, 798, 128, 128);
 
         settingsButton = new TextureRegion(buttons, 0, 249, 191, 52);
         freeChipsButton = new TextureRegion(buttons, 0, 301, 191, 52);
@@ -213,6 +223,14 @@ public class Assets implements Serializable{
         gameplayMenu = new TextureRegion(menu, 540, 0, 540, 960);
         sidebetMenu = new TextureRegion(menu, 1080, 0, 540, 960);
 
+        shoeMeter = new Texture(game,"shoeMeter.png");
+        meterText = new TextureRegion(shoeMeter,0,0,300,41);
+        meterDecks = new TextureRegion(shoeMeter,0,41,28,40); //Default 8
+        meter = new TextureRegion(shoeMeter,0,81,324,54);
+        meterBackground = new TextureRegion(shoeMeter,6,135,1,42);
+        meterStop = new TextureRegion(shoeMeter,0,135,3,42);
+        meterFilled = new TextureRegion(shoeMeter,12,135,70,42);
+
         slotMachineSpinner = game.getAudio().newSound("SlotMachineSpinner.wav");
         winningBet=game.getAudio().newSound("WinningBet3.wav");
         push = game.getAudio().newSound("WinningBet2.wav");
@@ -243,8 +261,6 @@ public class Assets implements Serializable{
         menu.reload();
         settingsFont.reload();
         calibriText.reload();
-
-
     }
 
     public static void reloadSound(GLGame game) {

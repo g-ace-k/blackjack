@@ -47,6 +47,7 @@ public class GameRenderer implements Serializable{
 
         if(state<5) {
             renderBackground(state);
+            renderShoeMeter(state);
             renderPressedButton(Assets.buttons,gameManager.doubleButton);
             renderPressedButton(Assets.buttons,gameManager.splitButton);
             renderPressedButton(Assets.buttons,gameManager.surrenderButton);
@@ -62,7 +63,7 @@ public class GameRenderer implements Serializable{
             renderBetsAndCounts();
             renderChips();
             if (state == 0 || state == 3)
-                renderMenuButton();
+                renderMenuButton(state);
             if (gameManager.getInsurance() && gameManager.getState() == 0)
                 renderInsurance();
             else if (insuranceAlphas != 0) {
@@ -322,7 +323,7 @@ public class GameRenderer implements Serializable{
         batcher.drawSprite(540-x,y,128,128,tempChip);
         batcher.endBatch();
 
-
+        //temp 1.2 scale
         CalibriFont.drawNumbersCentered(money,540,y,1,1,1,1,1.2f,1.2f,batcher,glGraphics);
 
         batcher.beginBatch(Assets.chips);
@@ -659,9 +660,21 @@ public class GameRenderer implements Serializable{
         glGraphics.getGl().glColor4f(1,1,1,1);
     }
 
-    private void renderMenuButton() {
+    private void renderMenuButton(int state) {
+        //state 0=bet 3=menu
+        if(state==3 && gameManager.menu.getRotation()!=180) {
+            gameManager.menu.setRotation(gameManager.menu.getRotation()+18);
+            gameManager.menu.setScaleX(gameManager.menu.getScaleX()-.1f);
+            gameManager.menu.setScaleY(gameManager.menu.getScaleY()-.1f);
+        }
+        else if(state==0 && gameManager.menu.getRotation()!=0) {
+            gameManager.menu.setRotation(gameManager.menu.getRotation()-18);
+            gameManager.menu.setScaleX(gameManager.menu.getScaleX()+.1f);
+            gameManager.menu.setScaleY(gameManager.menu.getScaleY()+.1f);
+        }
+
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(gameManager.menu.getXPos(),gameManager.menu.getYPos(),gameManager.menu.getWidth(),gameManager.menu.getHeight(),Assets.menuButton);
+        batcher.drawSprite(gameManager.menu.getXPos(),gameManager.menu.getYPos(),gameManager.menu.getWidth()*gameManager.menu.getScaleX(),gameManager.menu.getHeight()*gameManager.menu.getScaleY(),gameManager.menu.getRotation(),Assets.menuButton);
         batcher.drawSprite(gameManager.settings.getXPos(),gameManager.settings.getYPos(),gameManager.settings.getWidth(),gameManager.settings.getHeight(),gameManager.settings.getTextureRegion());
         batcher.drawSprite(gameManager.rules.getXPos(),gameManager.rules.getYPos(),gameManager.rules.getWidth(),gameManager.rules.getHeight(),gameManager.rules.getTextureRegion());
         batcher.drawSprite(gameManager.freeChips.getXPos(),gameManager.freeChips.getYPos(),gameManager.freeChips.getWidth(),gameManager.freeChips.getHeight(),gameManager.freeChips.getTextureRegion());
@@ -856,6 +869,52 @@ public class GameRenderer implements Serializable{
         }
     }
 
+    private void renderShoeMeter(int state) {
+
+
+        batcher.beginBatch(Assets.shoeMeter);
+        batcher.drawSprite(882,1828,314,42,Assets.meterBackground);
+        batcher.endBatch();
+
+        //optimize this to just use one stretched out sprite
+        //batcher.beginBatch(Assets.shoeMeter);
+        //for(int i=(726+(int)(gameManager.getPointer()*(6f/gameManager.getDecks())));i<=1038;i++) {
+        //    batcher.drawSprite(i,1828,1,42,Assets.meterFilled);
+        //}
+        //batcher.endBatch();
+
+        //location of where the meter will start
+        int loc=(int)(gameManager.getPointer()*(6f/gameManager.getDecks()));
+
+
+        batcher.beginBatch(Assets.shoeMeter);
+        if(settingsManager.getCSM()==false)
+            batcher.drawSprite(1039-(312-loc)/2,1828,312-loc,42,Assets.meterFilled);
+        else {
+            if(state!=0)
+                batcher.drawSprite(1039-(312-loc)/2,1828,312-loc,42,Assets.meterFilled);
+            else
+                batcher.drawSprite(1039-(312)/2,1828,312,42,Assets.meterFilled);
+        }
+        batcher.endBatch();
+
+        //(int)(gameManager.getDecks()*52*(settingsManager.getPenetration()/100f))-gameManager.getPointer())<=0)  meter is 312 in length
+        if(settingsManager.getCSM()==false) {
+            batcher.beginBatch(Assets.shoeMeter);
+            batcher.drawSprite(726 + ((312 * settingsManager.getPenetration()) / 100), 1828, 3, 42, Assets.meterStop);
+            batcher.endBatch();
+        }
+
+        //Makes sure the deck meter is up to date, needed because assets load after the mainscreen initialization, can probably fix later with time for optimization
+        Assets.meterDecks.changeValues((gameManager.getDecks()-1)*29,41,29,40);
+
+        batcher.beginBatch(Assets.shoeMeter);
+        batcher.drawSprite(902,1882,300,40,Assets.meterText);
+        batcher.drawSprite(726,1882,29,40,Assets.meterDecks);
+        batcher.drawSprite(882,1828,324,54,Assets.meter);
+        batcher.endBatch();
+    }
+
     private void renderBackground(int state) {
 
 
@@ -875,11 +934,13 @@ public class GameRenderer implements Serializable{
         glGraphics.getGl().glColor4f(light,light,light,1);
 
         batcher.beginBatch(Assets.background);
-        batcher.drawSprite(540, 960, 1080, 1920, settingsManager.getBackgroundTexture());
+        //batcher.drawSprite(540, 960, 1080, 1920, settingsManager.getBackgroundTexture());
+        batcher.drawSprite(540, 960, 1080, 1920, Assets.red);
         batcher.endBatch();
 
-        batcher.beginBatch(Assets.testregion);
-        batcher.drawSprite(540, 960, 1080, 1920, Assets.test);
+        batcher.beginBatch(Assets.tableSettings);
+        batcher.drawSprite(539, 1279, 817, 54, Assets.blackjackPayout);
+        batcher.drawSprite(540,1156,1080,174,Assets.dealerSetting);
         batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,1);
