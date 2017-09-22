@@ -2,6 +2,9 @@ package com.mikegacek.blackjack;
 
 import android.util.Log;
 
+import com.mikegacek.blackjack.framework.gl.Texture;
+import com.mikegacek.blackjack.framework.gl.TextureRegion;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +24,7 @@ public class GameManager  implements Serializable{
     public ArrayList<Card> playerSplitThree;
     public int cardsPos,cardsSplitOnePos,cardsSplitTwoPos,cardsSplitThreePos;
     public ArrayList<Card> dealerCards;
-    public Button hitButton,standButton,doubleButton,splitButton,surrenderButton,yes,no,menu,settings,rules,freeChips,sound,hintButton,playButton;
+    public Button hitButton,standButton,doubleButton,splitButton,surrenderButton,yes,no,menu,menuBackground,settings,statistics,rules,freeChips,earnChips,sound,menuBackArrow,tableGreen,tableBlue,tableRed,tablePurple,hintButton,playButton;
     //state 0=check dealer for blackjack,1=player main hand, 2=player split one, 3=player split 2, 4=player split 3, 5=dealer, 6=after dealer done drawing, 7=player surrender, 8=everything finished
     public int state,hands,waitTime=30;
     public boolean playerBJ,leftFlag;
@@ -59,10 +62,23 @@ public class GameManager  implements Serializable{
         surrenderButton = new Button(330,145,540,-100,Assets.surrenderButton);
         hintButton= new Button(99,99,60,1840,Assets.hint);
         playButton= new Button(99,99,60,1720,Assets.play);
-        settings= new Button(286,78,-500,700,Assets.settingsButton);
-        rules = new Button(286,78,-400,615,Assets.rulesButton);
-        freeChips=new Button(286,78,-300,530,Assets.freeChipsButton);
-        sound= new Button(286,78,-200,445,Assets.soundOnButton);
+
+        menuBackground = new Button(1080,1920,-394,960,Assets.menuBackground);
+
+        settings= new Button(934,100,-467,1713,Assets.settingsMenuButton);
+        statistics= new Button(934,100,-467,1614,Assets.statisticsMenuButton);
+        freeChips=new Button(934,100,-467,1515,Assets.freeChipsMenuButton);
+        earnChips=new Button(934,100,-467,1416,Assets.earnChipsMenuButton);
+        rules = new Button(934,100,-467,1317,Assets.rulesMenuButton);
+        sound= new Button(934,100,-467,1218,Assets.soundOnMenuButton);
+
+        menuBackArrow = new Button(99,99,-121,1845,Assets.menuBackArrowButton);
+
+        tableGreen= new Button(320,239,-670,861,Assets.greenTableButton);
+        tableBlue= new Button(320,239,-264,861,Assets.blueTableButton);
+        tableRed= new Button(320,239,-670,561,Assets.redTableButton);
+        tablePurple= new Button(320,239,-264,561,Assets.purpleTableButton);
+
         yes=new Button(150,82,326,1093,Assets.yes);
         no=new Button(133,82,760,1093,Assets.no);
         menu = new Button(99,99,60,1840,Assets.menuButton);
@@ -341,31 +357,28 @@ public class GameManager  implements Serializable{
         }
     }
 
-    public void updateHitButton() {
+    public void updatePlayButtons() {
         hitButton.move(.5f);
-    }
-
-    public void updateStandButton() {
         standButton.move(.5f);
-    }
-
-    public void updateDoubleButton() {
         doubleButton.move(.5f);
-    }
-
-    public void updateSplitButton() {
         splitButton.move(.5f);
+        surrenderButton.move(.5f);
     }
 
-    public void updateSurrenderButton() { surrenderButton.move(.5f);}
-
-    public void updateSettingsButton() {settings.move(.5f);}
-
-    public void updateRulesButton() { rules.move(.5f);}
-
-    public void updateFreeChipsButton() { freeChips.move(.5f);}
-
-    public void updateSoundButton() { sound.move(.5f);}
+    public void updateMenuButtons() {
+        menuBackground.move(.75f);
+        settings.move(.75f);
+        statistics.move(.75f);
+        freeChips.move(.75f);
+        earnChips.move(.75f);
+        rules.move(.75f);
+        sound.move(.75f);
+        menuBackArrow.move(.75f);
+        tableGreen.move(.75f);
+        tableBlue.move(.75f);
+        tableRed.move(.75f);
+        tablePurple.move(.75f);
+    }
 
     public void updateGame() {
 
@@ -1109,6 +1122,36 @@ public class GameManager  implements Serializable{
             hitButton.setNewPos(186,77);
             standButton.setNewPos(894,77);
         }
+    }
+
+    public void pullMenu() {
+        menuBackground.setNewPos(540,960);
+        settings.setNewPos(467,1713);
+        statistics.setNewPos(467,1614);
+        freeChips.setNewPos(467,1515);
+        earnChips.setNewPos(467,1416);
+        rules.setNewPos(467,1317);
+        sound.setNewPos(467,1218);
+        menuBackArrow.setNewPos(843,1845);
+        tableGreen.setNewPos(264,861);
+        tableBlue.setNewPos(670,861);
+        tableRed.setNewPos(264,561);
+        tablePurple.setNewPos(670,561);
+    }
+
+    public void pushMenu() {
+        menuBackground.setNewPos(-394,960);
+        settings.setNewPos(-467,1713);
+        statistics.setNewPos(-467,1614);
+        freeChips.setNewPos(-467,1515);
+        earnChips.setNewPos(-467,1416);
+        rules.setNewPos(-467,1317);
+        sound.setNewPos(-467,1218);
+        menuBackArrow.setNewPos(-121,1845);
+        tableGreen.setNewPos(-670,861);
+        tableBlue.setNewPos(-264,861);
+        tableRed.setNewPos(-670,561);
+        tablePurple.setNewPos(-264,561);
     }
 
     public ArrayList<Card> getCurrentHand() {

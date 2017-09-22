@@ -29,6 +29,8 @@ public class GameRenderer implements Serializable{
     private float bettingAlphas,insuranceAlphas;
     private float hand1Alpha,hand2Alpha,hand3Alpha,hand4Alpha,dealerHandAlpha;
     private float light;
+    private Texture backgroundTexture;
+    private TextureRegion backgroundTextureRegion;
 
     public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, Settings settings) {
         this.batcher=batcher;
@@ -41,6 +43,8 @@ public class GameRenderer implements Serializable{
         bettingAlphas=1;
         insuranceAlphas=0;
         light=1;
+        backgroundTexture=Assets.greenBackground;
+        backgroundTextureRegion=Assets.green;
     }
 
     public void render(int state) {
@@ -674,12 +678,28 @@ public class GameRenderer implements Serializable{
         }
 
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(gameManager.menu.getXPos(),gameManager.menu.getYPos(),gameManager.menu.getWidth()*gameManager.menu.getScaleX(),gameManager.menu.getHeight()*gameManager.menu.getScaleY(),gameManager.menu.getRotation(),Assets.menuButton);
-        batcher.drawSprite(gameManager.settings.getXPos(),gameManager.settings.getYPos(),gameManager.settings.getWidth(),gameManager.settings.getHeight(),gameManager.settings.getTextureRegion());
-        batcher.drawSprite(gameManager.rules.getXPos(),gameManager.rules.getYPos(),gameManager.rules.getWidth(),gameManager.rules.getHeight(),gameManager.rules.getTextureRegion());
-        batcher.drawSprite(gameManager.freeChips.getXPos(),gameManager.freeChips.getYPos(),gameManager.freeChips.getWidth(),gameManager.freeChips.getHeight(),gameManager.freeChips.getTextureRegion());
-        batcher.drawSprite(gameManager.sound.getXPos(),gameManager.sound.getYPos(),gameManager.sound.getWidth(),gameManager.sound.getHeight(),gameManager.sound.getTextureRegion());
+        batcher.drawSprite(gameManager.menu.getXPos(),gameManager.menu.getYPos(),gameManager.menu.getWidth()*gameManager.menu.getScaleX(),gameManager.menu.getHeight()*gameManager.menu.getScaleY(),gameManager.menu.getTextureRegion());
         batcher.endBatch();
+
+        batcher.beginBatch(Assets.menuBack);
+        batcher.drawSprite(gameManager.menuBackground,gameManager.menuBackground.getTextureRegion());
+        batcher.endBatch();
+
+        batcher.beginBatch(Assets.menuButtons);
+        batcher.drawSprite(gameManager.tableGreen,gameManager.tableGreen.getTextureRegion());
+        batcher.drawSprite(gameManager.tableBlue,gameManager.tableBlue.getTextureRegion());
+        batcher.drawSprite(gameManager.tableRed,gameManager.tableRed.getTextureRegion());
+        batcher.drawSprite(gameManager.tablePurple,gameManager.tablePurple.getTextureRegion());
+        batcher.endBatch();
+
+        renderPressedButton(Assets.menuButtons,gameManager.menuBackArrow);
+
+        renderPressedButton(Assets.menuButtons,gameManager.settings);
+        renderPressedButton(Assets.menuButtons,gameManager.statistics);
+        renderPressedButton(Assets.menuButtons,gameManager.freeChips);
+        renderPressedButton(Assets.menuButtons,gameManager.earnChips);
+        renderPressedButton(Assets.menuButtons,gameManager.rules);
+        renderPressedButton(Assets.menuButtons,gameManager.sound);
     }
 
     private void renderFreeChips(int state) {
@@ -933,9 +953,9 @@ public class GameRenderer implements Serializable{
 
         glGraphics.getGl().glColor4f(light,light,light,1);
 
-        batcher.beginBatch(Assets.background);
+        batcher.beginBatch(backgroundTexture);
         //batcher.drawSprite(540, 960, 1080, 1920, settingsManager.getBackgroundTexture());
-        batcher.drawSprite(540, 960, 1080, 1920, Assets.red);
+        batcher.drawSprite(540, 960, 1080, 1920,backgroundTextureRegion);
         batcher.endBatch();
 
         batcher.beginBatch(Assets.tableSettings);
@@ -971,6 +991,11 @@ public class GameRenderer implements Serializable{
         batcher.beginBatch(Assets.edgeBackground);
         batcher.drawSprite(540,100,1080,200,Assets.edge);
         batcher.endBatch();
+    }
+
+    public void changeBackground(Texture t, TextureRegion tr) {
+        backgroundTexture=t;
+        backgroundTextureRegion=tr;
     }
 
 

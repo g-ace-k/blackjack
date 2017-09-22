@@ -105,15 +105,8 @@ public class MainScreen extends GLScreen {
             deltaTime = 0.1f;
 
         gameManager.updateDealerCards();
-        gameManager.updateHitButton();
-        gameManager.updateStandButton();
-        gameManager.updateDoubleButton();
-        gameManager.updateSplitButton();
-        gameManager.updateSurrenderButton();
-        gameManager.updateSettingsButton();
-        gameManager.updateRulesButton();
-        gameManager.updateFreeChipsButton();
-        gameManager.updateSoundButton();
+        gameManager.updatePlayButtons();
+        gameManager.updateMenuButtons();
 
         chipManager.updateChips();
         chipManager.updateButtons();
@@ -302,10 +295,7 @@ public class MainScreen extends GLScreen {
                     state=GAME_MENU;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
-                    gameManager.settings.setNewPos(225,700);
-                    gameManager.rules.setNewPos(225,615);
-                    gameManager.freeChips.setNewPos(225,530);
-                    gameManager.sound.setNewPos(225,445);
+                    gameManager.pullMenu();
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getDealButton(),touchPoint) && chipManager.getMainBet().size()>0) {
                     Assets.button.play(sound);
@@ -316,6 +306,7 @@ public class MainScreen extends GLScreen {
                     chipManager.saveRepeat();
                     gameManager.clearCards();
                     gameManager.setState(0);
+                    //maybe move this to after the previous hand finishes when the cards go to the side
                     if(((int)(gameManager.getDecks()*52*(settingsManager.getPenetration()/100f))-gameManager.getPointer())<=0 || settingsManager.getCSM()==true)
                         gameManager.shuffleDeck();
                     chipManager.updatePlayerHandMoney();
@@ -515,27 +506,34 @@ public class MainScreen extends GLScreen {
             TouchEvent event = touchEvents.get(i);
             touchPoint.set(event.x, event.y);
             guiCam.touchToWorld(touchPoint);
+            if(event.type==TouchEvent.TOUCH_DRAGGED || event.type==TouchEvent.TOUCH_DOWN) {
+                gameManager.menuBackArrow.setPressed(OverlapTester.pointInRectangle(gameManager.menuBackArrow,touchPoint));
+                gameManager.settings.setPressed(OverlapTester.pointInRectangle(gameManager.settings,touchPoint));
+                gameManager.statistics.setPressed(OverlapTester.pointInRectangle(gameManager.statistics,touchPoint));
+                gameManager.freeChips.setPressed(OverlapTester.pointInRectangle(gameManager.freeChips,touchPoint));
+                gameManager.earnChips.setPressed(OverlapTester.pointInRectangle(gameManager.earnChips,touchPoint));
+                gameManager.rules.setPressed(OverlapTester.pointInRectangle(gameManager.rules,touchPoint));
+                gameManager.sound.setPressed(OverlapTester.pointInRectangle(gameManager.sound,touchPoint));
+
+            }
             if(event.type==TouchEvent.TOUCH_UP) {
-                if(OverlapTester.pointInRectangle(gameManager.menu,touchPoint)) {
+                gameManager.menuBackArrow.setPressed(false);
+                gameManager.settings.setPressed(false);
+                gameManager.statistics.setPressed(false);
+                gameManager.freeChips.setPressed(false);
+                gameManager.earnChips.setPressed(false);
+                gameManager.rules.setPressed(false);
+                gameManager.sound.setPressed(false);
+                if(OverlapTester.pointInRectangle(gameManager.menuBackArrow,touchPoint)) {
                     Assets.button.play(sound);
                     state=GAME_BETTING;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
-                    gameManager.settings.setNewPos(-500,700);
-                    gameManager.rules.setNewPos(-400,615);
-                    gameManager.freeChips.setNewPos(-300,530);
-                    gameManager.sound.setNewPos(-200,445);
+                    gameManager.pushMenu();
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.settings,touchPoint)) {
                     Assets.button.play(sound);
-                    gameManager.settings.setNewPos(-500,700);
-                    gameManager.rules.setNewPos(-400,615);
-                    gameManager.freeChips.setNewPos(-300,530);
-                    gameManager.sound.setNewPos(-200,445);
-                    gameManager.settings.setPos(-500,700);
-                    gameManager.rules.setPos(-400,615);
-                    gameManager.freeChips.setPos(-300,530);
-                    gameManager.sound.setPos(-200,445);
+                    gameManager.pushMenu();
                     state=GAME_SETTINGS;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
@@ -548,14 +546,7 @@ public class MainScreen extends GLScreen {
                     state=GAME_BETTING;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
-                    gameManager.settings.setNewPos(-500,700);
-                    gameManager.rules.setNewPos(-400,615);
-                    gameManager.freeChips.setNewPos(-300,530);
-                    gameManager.sound.setNewPos(-200,445);
-                    gameManager.settings.setPos(-500,700);
-                    gameManager.rules.setPos(-400,615);
-                    gameManager.freeChips.setPos(-300,530);
-                    gameManager.sound.setPos(-200,445);
+                    gameManager.pushMenu();
                     gameManager.cardsToDiscard();
                     glGame.startActivity(new Intent(glGame,Rules.class));
                 }
@@ -564,14 +555,7 @@ public class MainScreen extends GLScreen {
                     state = GAME_SLOTMACHINE;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
-                    gameManager.settings.setNewPos(-500,700);
-                    gameManager.rules.setNewPos(-400,615);
-                    gameManager.freeChips.setNewPos(-300,530);
-                    gameManager.sound.setNewPos(-200,445);
-                    gameManager.settings.setPos(-500,700);
-                    gameManager.rules.setPos(-400,615);
-                    gameManager.freeChips.setPos(-300,530);
-                    gameManager.sound.setPos(-200,445);
+                    gameManager.pushMenu();
                     gameManager.cardsToDiscard();
                     slotMachine.reset();
                     waitTime=180;
@@ -582,14 +566,25 @@ public class MainScreen extends GLScreen {
                     if(settingsManager.getSound()==1) {
                         settingsManager.setSound(0);
                         sound=0;
-                        gameManager.sound.setTextureRegion(Assets.soundOffButton);
+                        gameManager.sound.setTextureRegion(Assets.soundOffMenuButton);
                     }
                     else {
                         settingsManager.setSound(1);
                         sound=1;
                         Assets.button.play(sound);
-                        gameManager.sound.setTextureRegion(Assets.soundOnButton);
+                        gameManager.sound.setTextureRegion(Assets.soundOnMenuButton);
                     }
+                }else if(OverlapTester.pointInRectangle(gameManager.tableGreen,touchPoint)) {
+                    gameRenderer.changeBackground(Assets.greenBackground,Assets.green);
+                }
+                else if(OverlapTester.pointInRectangle(gameManager.tableBlue,touchPoint)) {
+                    gameRenderer.changeBackground(Assets.blueBackground,Assets.blue);
+                }
+                else if(OverlapTester.pointInRectangle(gameManager.tableRed,touchPoint)) {
+                    gameRenderer.changeBackground(Assets.redBackground,Assets.red);
+                }
+                else if(OverlapTester.pointInRectangle(gameManager.tablePurple,touchPoint)) {
+                    gameRenderer.changeBackground(Assets.purpleBackground,Assets.purple);
                 }
             }
         }
@@ -977,6 +972,11 @@ public class MainScreen extends GLScreen {
                 presentSettings(deltaTime);
                 break;
         }
+
+        //Test for background
+        batcher.beginBatch(Assets.testSettings);
+        batcher.drawSprite(540,960,1080,1920,Assets.testSettingsBackground);
+        batcher.endBatch();
 
         gl.glDisable(GL10.GL_BLEND);
     }
