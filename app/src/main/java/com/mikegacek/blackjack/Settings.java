@@ -41,6 +41,8 @@ public class Settings  implements Serializable {
     private double blackjackPaysTemp;
     private boolean csmTemp,insuranceTemp,surrenderTemp,resplitTemp,hitAcesTemp,doubleAcesTemp,dasTemp,perfectPairsTemp,twentyOneV1Temp,twentyOneV2Temp;
 
+
+    //for stats page
     private int playerBlackjacks,dealerBlackjacks,handsPlayed,handsWon,handsLost,moneyBet,moneyWon,moneyLost;
     private int doubleDownTotal,doubleDownWon,doubleDownLost,splitsTotal,insuranceTotal,insuranceWon,surrenderTotal;
     private int perfectPairsTotal,perfectPairsWon,perfectPairsIncome,twentyOneTotal,twentyOneWon,twentyOneV1Income,twentyOneV2Income;

@@ -13,8 +13,8 @@ import java.util.ArrayList;
 
 public class TwentyOnePlusThree implements SideBets,Serializable{
 
-    private int version,oldVersion;
-    private int payout,oldPayout,bet;
+    private int version;
+    private int payout,bet,position;
     private transient ArrayList<TextureRegion> payouts;
 
 
@@ -22,8 +22,8 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
     public TwentyOnePlusThree(int version) {
         this.version=version;
         payout=-1;
-        oldPayout=-1;
         bet=0;
+        position=1;
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
     }
@@ -44,25 +44,17 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         this.payout = payout;
     }
 
-    public int getOldPayout() {
-        return oldPayout;
-    }
+    public int getPosition() { return position;}
 
-    public void setOldPayout(int oldPayout) {
-        this.oldPayout = oldPayout;
-    }
+    public void setPosition(int position) { this.position=position;}
 
-    public int getOldVersion() { return oldVersion;}
-
-    public void setOldVersion(int v) { oldVersion=v;}
     @Override
     public void resetPayout() {
-        oldPayout=payout;
         payout=-1;
     }
 
     @Override
-    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards,int bet,Settings settingsManager) {
+    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards,int bet,StatisticsManager statisticsManager) {
         boolean flush=false;
         boolean straight=false;
         boolean trips=false;
@@ -115,16 +107,14 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         }
 
         if(bet>0) {
-            settingsManager.setTwentyOneTotal(settingsManager.getTwentyOneTotal()+1);
+            statisticsManager.setTwentyOneTotal(statisticsManager.getTwentyOneTotal()+1);
             if(version==1)
-                settingsManager.setTwentyOneV1Income(settingsManager.getTwentyOneV1Income()+bet*payout);
+                statisticsManager.setTwentyOneV1Income(statisticsManager.getTwentyOneV1Income()+bet*payout);
             else if(version==2)
-                settingsManager.setTwentyOneV2Income(settingsManager.getTwentyOneV2Income()+bet*payout);
+                statisticsManager.setTwentyOneV2Income(statisticsManager.getTwentyOneV2Income()+bet*payout);
             if(payout>0)
-                settingsManager.setTwentyOneWon(settingsManager.getTwentyOneWon()+1);
+                statisticsManager.setTwentyOneWon(statisticsManager.getTwentyOneWon()+1);
         }
-
-        oldPayout=payout;
 
         if(payout>0)
             Assets.winningBet.play((float)MainScreen.sound*.2f);
@@ -195,18 +185,29 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
     }
 
     @Override
-    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics, int pay,int v) {
+    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics, int pay,int v, int p) {
         int change=-1;
+        int textOffset=0;
+        int circleOffset=0;
+
+        if(p==0) {
+            textOffset=188;
+            circleOffset=304;
+        }
+        else {
+            textOffset=892;
+            circleOffset=776;
+        }
 
         createPayoutTextures(v);
 
         glGraphics.getGl().glColor4f(1,1,1,1);
         if(payouts.size()>=2) {
             batcher.beginBatch(Assets.sideBet);
-            batcher.drawSprite(776, 674, 146, 146, payouts.get(0));
+            batcher.drawSprite(circleOffset, 674, 146, 146, payouts.get(0));
             batcher.endBatch();
             batcher.beginBatch(Assets.payouts);
-            batcher.drawSprite(892,517,376,54,payouts.get(1));
+            batcher.drawSprite(textOffset,517,376,54,payouts.get(1));
             batcher.endBatch();
         }
         //Payouts 30,20,10,5
@@ -226,7 +227,7 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
                     if(i==change)
                         glGraphics.getGl().glColor4f(0,1,0,1);
                     batcher.beginBatch(Assets.payouts);
-                    batcher.drawSprite(892,464-(i-2)*35,376,35,payouts.get(i));
+                    batcher.drawSprite(textOffset,464-(i-2)*35,376,35,payouts.get(i));
                     batcher.endBatch();
                     glGraphics.getGl().glColor4f(1,1,1,1);
                 }
@@ -246,7 +247,7 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
                     if(i==change)
                         glGraphics.getGl().glColor4f(0,1,0,1);
                     batcher.beginBatch(Assets.payouts);
-                    batcher.drawSprite(892,464-(i-2)*35,376,35,payouts.get(i));
+                    batcher.drawSprite(textOffset,464-(i-2)*35,376,35,payouts.get(i));
                     batcher.endBatch();
                     glGraphics.getGl().glColor4f(1,1,1,1);
                 }
@@ -257,7 +258,7 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
 
     @Override
     public int getPayoutAmount() {
-        return oldPayout*bet;
+        return payout*bet;
     }
 
     public void load() {

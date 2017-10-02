@@ -107,6 +107,38 @@ public class CalibriFont{
         return size;
     }
 
+    static int drawNumbersBackwardsAndEqualDistance(String string, float x, float y,float r, float g, float b,float a,float scaleX, float scaleY,SpriteBatcher batcher,GLGraphics glGraphics) {
+        glGraphics.getGl().glColor4f(r,g,b,a);
+        int size = 0;
+        if(string.charAt(0)=='-') {
+            int tempInt = Integer.parseInt(string)*-1;
+            if(tempInt!=21)
+                string=tempInt-10 + "/" + tempInt;
+            else
+                string=""+tempInt;
+        }
+        if(string.length()>0) {
+            TextureRegion temp = getCharacter(string.charAt(string.length()-1));
+            batcher.beginBatch(Assets.calibriText);
+            for (int i = string.length()-1; i >= 0; i--) {
+                batcher.drawSprite(x, y, temp.width * scaleX, temp.height * scaleY, temp);
+                size += (temp.width + 8) * scaleX;
+                if (i > 0) {
+                    temp = getCharacter(string.charAt(i-1));
+                    if(string.charAt(i-1)==',' || string.charAt(i)==',') //adding commas to seperate large numbers, will need reduced spacing
+                        x-=30*scaleX;
+                    else
+                        x-=46*scaleX;
+                }
+            }
+            batcher.endBatch();
+        }
+
+        glGraphics.getGl().glColor4f(r,g,b,1);
+
+        return size;
+    }
+
     static void drawNumbersCentered(String string, float x, float y, float r, float g, float b, float a,float scaleX, float scaleY, SpriteBatcher batcher, GLGraphics glGraphics) {
 
         //remove - when looking for soft hands

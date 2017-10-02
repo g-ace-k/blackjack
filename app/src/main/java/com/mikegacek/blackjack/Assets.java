@@ -34,6 +34,8 @@ public class Assets implements Serializable{
     public static Texture shoeMeter;
     public static Texture menuBack;
     public static Texture menuButtons;
+    public static Texture settingsBackground;
+    public static Texture settingsForeground;
 
     public static TextureRegion green;
     public static TextureRegion blue;
@@ -118,6 +120,20 @@ public class Assets implements Serializable{
     public static TextureRegion soundOffMenuButton;
     public static TextureRegion menuBackArrowButton;
 
+    public static TextureRegion settingsSmallHighlight;
+    public static TextureRegion settingsMediumHighlight;
+    public static TextureRegion settingsLargeHighlight;
+    public static TextureRegion settingsToggle;
+    public static TextureRegion settingsToggleCircle;
+    public static TextureRegion settingsSliderOrangeBar;
+    public static TextureRegion settingsSliderGrayBar;
+    public static TextureRegion settingsSliderCircle;
+    public static TextureRegion settingsExitButton;
+    public static TextureRegion settingsOrangeArrow;
+
+    public static TextureRegion settingsBack;
+    public static TextureRegion settingsFore;
+
     public static Sound slotMachineSpinner;
     public static Sound winningBet;
     public static Sound multiChips;
@@ -140,6 +156,8 @@ public class Assets implements Serializable{
 
     public static Texture testSettings;
     public static TextureRegion testSettingsBackground;
+    public static Texture testC;
+    public static TextureRegion testColor;
 
     public static void load(GLGame game) {
 
@@ -206,20 +224,26 @@ public class Assets implements Serializable{
         removeChips = new TextureRegion(buttons, 483, 676,252, 122);
         previousArrow = new TextureRegion(buttons, 363, 798, 128, 128);
 
-        settingsButton = new TextureRegion(buttons, 0, 249, 191, 52);
-        freeChipsButton = new TextureRegion(buttons, 0, 301, 191, 52);
-        rulesButton = new TextureRegion(buttons, 0, 353, 191, 52);
-        soundOnButton = new TextureRegion(buttons, 0, 405, 191, 52);
-        soundOffButton = new TextureRegion(buttons, 0, 457, 191, 52);
-        menuArrowRight = new TextureRegion(buttons, 278, 66, 45, 60);
-        menuArrowLeft = new TextureRegion(buttons, 278, 126, 45, 60);
-        radioButtonOn = new TextureRegion(buttons, 150, 174, 40, 40);
-        freeChips = new TextureRegion(buttons, 0, 539, 272, 103);
-
         exit=new TextureRegion(buttons,297,1425,99,99);
         menuButton=new TextureRegion(buttons,198,1425,99,99);
         hint = new TextureRegion(buttons, 99, 1425, 99, 99);
         play = new TextureRegion(buttons, 0, 1425, 99, 99);
+
+        settingsSmallHighlight = new TextureRegion(buttons,0,1524,71,59);
+        settingsMediumHighlight = new TextureRegion(buttons,71,1524,103,59);
+        settingsLargeHighlight = new TextureRegion(buttons,328,1524,123,59);
+        settingsToggle = new TextureRegion(buttons,174,1524,91,47);
+        settingsToggleCircle = new TextureRegion(buttons,265,1524,63,63);
+        settingsSliderOrangeBar = new TextureRegion(buttons,0,1584,91,7);
+        settingsSliderGrayBar = new TextureRegion(buttons,91,1584,91,7);
+        settingsSliderCircle = new TextureRegion(buttons,486,1524,69,69);
+        settingsExitButton = new TextureRegion(buttons,555,1485,608,115);
+        settingsOrangeArrow = new TextureRegion(buttons,451,1524,35,35);
+
+        settingsBackground= new Texture(game,"settingsBackground.png");
+        settingsForeground= new Texture(game,"settingsForeground.png");
+        settingsBack = new TextureRegion(settingsBackground,0,0,1080,1920);
+        settingsFore = new TextureRegion(settingsForeground,0,0,1080,1920);
 
         numbers = new Texture(game, "numbers.png");
         highlight = new Texture(game, "highlight.png");
@@ -291,6 +315,9 @@ public class Assets implements Serializable{
         //TEST
         testSettings = new Texture(game,"testSettings.png");
         testSettingsBackground = new TextureRegion(testSettings,0,0,1080,1920);
+
+        testC = new Texture(game,"testColor.png");
+        testColor = new TextureRegion(testC,0,0,100,100);
 
 
     }

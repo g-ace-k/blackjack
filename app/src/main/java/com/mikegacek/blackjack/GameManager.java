@@ -31,18 +31,20 @@ public class GameManager  implements Serializable{
     private boolean shuffleInProgress=false;
     private int shufflingWaitTime=0;
     private transient ChipManager chipManager;
-    private transient Settings settingsManager;
+    private transient SettingsManager settingsManager;
+    private transient StatisticsManager statisticsManager;
     private int pointer;
     private int decks;
-    private SideBets sideBetLeft,sideBetRight;
+    private SideBets sideBetLeft,sideBetRight, oldSideBetLeft, oldSideBetRight;
     private boolean insurance;
     private boolean surrender;
 
     private boolean playerBust;
 
-    public GameManager(int decks, ChipManager chipManager,Settings settingsManager) {
+    public GameManager(int decks, ChipManager chipManager,SettingsManager settingsManager, StatisticsManager statisticsManager) {
         this.chipManager=chipManager;
         this.settingsManager=settingsManager;
+        this.statisticsManager=statisticsManager;
         this.decks=this.settingsManager.getDecks();
         cards = new ArrayList<>(52*decks);
         shuffling = new ArrayList<>(26);
@@ -168,6 +170,22 @@ public class GameManager  implements Serializable{
 
     public void setSideBetLeft(SideBets sideBetLeft) {
         this.sideBetLeft = sideBetLeft;
+    }
+
+    public SideBets getOldSideBetLeft() {
+        return oldSideBetLeft;
+    }
+
+    public void setOldSideBetLeft(SideBets oldSideBetLeft) {
+        this.oldSideBetLeft = oldSideBetLeft;
+    }
+
+    public SideBets getOldSideBetRight() {
+        return oldSideBetRight;
+    }
+
+    public void setOldSideBetRight(SideBets oldSideBetRight) {
+        this.oldSideBetRight = oldSideBetRight;
     }
 
     public int getPointer() { return pointer;}
@@ -391,9 +409,9 @@ public class GameManager  implements Serializable{
                 }
                 else if(Math.abs(calcHand(dealerCards))==21) {
                     state=5;
-                    settingsManager.setDealerBlackjacks(settingsManager.getDealerBlackjacks()+1);
+                    statisticsManager.setDealerBlackjacks(statisticsManager.getDealerBlackjacks()+1);
                     if(Math.abs(calcHand(playerCards))==21 && playerCards.size()==2 && playerSplitOne.size()==0) {
-                        settingsManager.setPlayerBlackjacks(settingsManager.getPlayerBlackjacks()+1);
+                        statisticsManager.setPlayerBlackjacks(statisticsManager.getPlayerBlackjacks()+1);
                     }
                     insurance=false;
                     surrenderButton.setNewPos(540,-100);
@@ -412,7 +430,7 @@ public class GameManager  implements Serializable{
                 if(Math.abs(calcHand(playerCards))>=21) {
                     if(Math.abs(calcHand(playerCards))==21 && playerCards.size()==2 && playerSplitOne.size()==0) {
                         playerBJ = true;
-                        settingsManager.setPlayerBlackjacks(settingsManager.getPlayerBlackjacks()+1);
+                        statisticsManager.setPlayerBlackjacks(statisticsManager.getPlayerBlackjacks()+1);
                     }
                     changeHand();
                 }
@@ -573,7 +591,7 @@ public class GameManager  implements Serializable{
 
 
         //Checks for maximum split hands
-        if((tempCard1==tempCard2 && hands!=settingsManager.getSplitHands())) {
+        if((tempCard1==tempCard2 && hands!=settingsManager.getSplit())) {
             if(settingsManager.getResplit()==false && tempCard1==1 && hands>1) //resplit aces rule
                 splitButton.setNewPos(894,-100);
             else
@@ -585,7 +603,7 @@ public class GameManager  implements Serializable{
 
     public void addDouble() {
         surrenderButton.setNewPos(540,-100);
-        settingsManager.setDoubleDownTotal(settingsManager.getDoubleDownTotal()+1);
+        statisticsManager.setDoubleDownTotal(statisticsManager.getDoubleDownTotal()+1);
         switch (state) {
             case 1:
                 if(playerCards.size()==2) {
@@ -626,10 +644,10 @@ public class GameManager  implements Serializable{
     public void addSplit() {
         surrenderButton.setNewPos(540,-100);
         int tempCard1,tempCard2;
-        settingsManager.setSplitsTotal(settingsManager.getSplitsTotal()+1);
+        statisticsManager.setSplitsTotal(statisticsManager.getSplitsTotal()+1);
         switch (state) {
             case 1:
-                if(playerCards.size()==2 && hands<settingsManager.getSplitHands()) {
+                if(playerCards.size()==2 && hands<settingsManager.getSplit()) {
                     hands++;
                     tempCard1=playerCards.get(0).getValue();
                     tempCard2=playerCards.get(1).getValue();
@@ -665,7 +683,7 @@ public class GameManager  implements Serializable{
                 }
                 break;
             case 2:
-                if(playerSplitOne.size()==2 && hands<settingsManager.getSplitHands()) {
+                if(playerSplitOne.size()==2 && hands<settingsManager.getSplit()) {
                     hands++;
                     tempCard1=playerSplitOne.get(0).getValue();
                     tempCard2=playerSplitOne.get(1).getValue();
@@ -693,7 +711,7 @@ public class GameManager  implements Serializable{
                 }
                 break;
             case 3:
-                if(playerSplitTwo.size()==2 && hands<settingsManager.getSplitHands()) {
+                if(playerSplitTwo.size()==2 && hands<settingsManager.getSplit()) {
                     hands++;
                     tempCard1=playerSplitTwo.get(0).getValue();
                     tempCard2=playerSplitTwo.get(1).getValue();
@@ -850,14 +868,14 @@ public class GameManager  implements Serializable{
     public void surrender() {
         Assets.multiChips.play(MainScreen.sound);
         state=7;
-        settingsManager.setSurrenderTotal(settingsManager.getSurrenderTotal()+1);
+        statisticsManager.setSurrenderTotal(statisticsManager.getSurrenderTotal()+1);
         surrenderButton.setNewPos(540,-100);
         surrender=true;
         playerBust=true;
         int originalBet=chipManager.getMainBetMoney()-chipManager.getInsuranceMoney();
         int total=originalBet-originalBet/2+chipManager.getInsuranceMoney();
-        settingsManager.setMoneyBet(settingsManager.getMoneyBet()+chipManager.getMainBetMoney());
-        settingsManager.setMoneyLost(settingsManager.getMoneyLost()+total);
+        statisticsManager.setMoneyBet(statisticsManager.getMoneyBet()+chipManager.getMainBetMoney());
+        statisticsManager.setMoneyLost(statisticsManager.getMoneyLost()+total);
         chipManager.payout(chipManager.getMainBet(),chipManager.getMainBetChips(),3,-total);
     }
 
@@ -890,20 +908,20 @@ public class GameManager  implements Serializable{
         int total=0;
         total= (int)(checkAgainstDealer(playerCards)*chipManager.getPlayerHandMoney()) + (int)checkAgainstDealer(playerSplitOne)*chipManager.getPlayerSplitOneMoney()+ (int)checkAgainstDealer(playerSplitTwo)*chipManager.getPlayerSplitTwoMoney()+ (int)checkAgainstDealer(playerSplitThree)*chipManager.getPlayerSplitThreeMoney();
         if(insurance) {
-            settingsManager.setMoneyBet(settingsManager.getMoneyBet()+chipManager.getInsuranceMoney());
-            settingsManager.setInsuranceTotal(settingsManager.getInsuranceTotal()+1);
+            statisticsManager.setMoneyBet(statisticsManager.getMoneyBet()+chipManager.getInsuranceMoney());
+            statisticsManager.setInsuranceTotal(statisticsManager.getInsuranceTotal()+1);
             if(Math.abs(calcHand(dealerCards))==21 && dealerCards.size()==2) {
                 total += chipManager.getInsuranceMoney() * 2;
-                settingsManager.setMoneyWon(settingsManager.getMoneyWon()+chipManager.getInsuranceMoney()*2);
-                settingsManager.setInsuranceWon(settingsManager.getInsuranceWon()+1);
+                statisticsManager.setMoneyWon(statisticsManager.getMoneyWon()+chipManager.getInsuranceMoney()*2);
+                statisticsManager.setInsuranceWon(statisticsManager.getInsuranceWon()+1);
             }
             else {
                 total -= chipManager.getInsuranceMoney();
-                settingsManager.setMoneyLost(settingsManager.getMoneyLost()+chipManager.getInsuranceMoney());
+                statisticsManager.setMoneyLost(statisticsManager.getMoneyLost()+chipManager.getInsuranceMoney());
             }
         }
 
-        settingsManager.setHandsPlayed(settingsManager.getHandsPlayed()+hands);
+        statisticsManager.setHandsPlayed(statisticsManager.getHandsPlayed()+hands);
 
         handStats(playerCards,chipManager.getPlayerHandMoney());
         handStats(playerSplitOne,chipManager.getPlayerSplitOneMoney());
@@ -922,19 +940,19 @@ public class GameManager  implements Serializable{
 
     private void handStats(ArrayList<Card> hand,int money) {
         if(money>0) {
-            settingsManager.setMoneyBet(settingsManager.getMoneyBet()+money);
+            statisticsManager.setMoneyBet(statisticsManager.getMoneyBet()+money);
             if (checkAgainstDealer(hand) > 0) {
-                settingsManager.setHandsWon(settingsManager.getHandsWon() + 1);
-                settingsManager.setMoneyWon(settingsManager.getMoneyWon()+(int)(money*checkAgainstDealer(hand)));
+                statisticsManager.setHandsWon(statisticsManager.getHandsWon() + 1);
+                statisticsManager.setMoneyWon(statisticsManager.getMoneyWon()+(int)(money*checkAgainstDealer(hand)));
                 if((int)hand.get(hand.size()-1).getRotation()==90) {
-                    settingsManager.setDoubleDownWon(settingsManager.getDoubleDownWon()+1);
+                    statisticsManager.setDoubleDownWon(statisticsManager.getDoubleDownWon()+1);
                 }
 
             } else if (checkAgainstDealer(hand) < 0) {
-                settingsManager.setHandsLost(settingsManager.getHandsLost() + 1);
-                settingsManager.setMoneyLost(settingsManager.getMoneyLost()+money);
+                statisticsManager.setHandsLost(statisticsManager.getHandsLost() + 1);
+                statisticsManager.setMoneyLost(statisticsManager.getMoneyLost()+money);
                 if((int)hand.get(hand.size()-1).getRotation()==90) {
-                    settingsManager.setDoubleDownLost(settingsManager.getDoubleDownLost()+1);
+                    statisticsManager.setDoubleDownLost(statisticsManager.getDoubleDownLost()+1);
                 }
             }
         }
@@ -1076,22 +1094,19 @@ public class GameManager  implements Serializable{
         insurance=false;
     }
 
+    //this method is run when cards have been dealt for a new hand
     public void checkSideBets() {
-        sideBetLeft.setOldVersion(sideBetLeft.getVersion());
-        sideBetRight.setOldVersion(sideBetRight.getVersion());
         if(chipManager.getSideBetLeftMoney()!=0) {
-            chipManager.payout(chipManager.getSideBetLeft(), chipManager.getSideBetLeftChips(), 1, sideBetLeft.payout(playerCards, dealerCards, chipManager.getSideBetLeftMoney(),settingsManager) * chipManager.getSideBetLeftMoney());
+            chipManager.payout(chipManager.getSideBetLeft(), chipManager.getSideBetLeftChips(), 1, sideBetLeft.payout(playerCards, dealerCards, chipManager.getSideBetLeftMoney(),statisticsManager) * chipManager.getSideBetLeftMoney());
         }
         else {
-            sideBetLeft.setOldPayout(0);
             sideBetLeft.setPayout(0);
         }
 
         if(chipManager.getSideBetRightMoney()!=0) {
-            chipManager.payout(chipManager.getSideBetRight(), chipManager.getSideBetRightChips(), 2, sideBetRight.payout(playerCards, dealerCards, chipManager.getSideBetRightMoney(),settingsManager) * chipManager.getSideBetRightMoney());
+            chipManager.payout(chipManager.getSideBetRight(), chipManager.getSideBetRightChips(), 2, sideBetRight.payout(playerCards, dealerCards, chipManager.getSideBetRightMoney(),statisticsManager) * chipManager.getSideBetRightMoney());
         }
         else {
-            sideBetRight.setOldPayout(0);
             sideBetRight.setPayout(0);
         }
 
@@ -1111,9 +1126,9 @@ public class GameManager  implements Serializable{
 
         if(Math.abs(calcHand(dealerCards))==21) {
             state=5;
-            settingsManager.setDealerBlackjacks(settingsManager.getDealerBlackjacks()+1);
+            statisticsManager.setDealerBlackjacks(statisticsManager.getDealerBlackjacks()+1);
             if(Math.abs(calcHand(playerCards))==21 && playerCards.size()==2 && playerSplitOne.size()==0) {
-                settingsManager.setPlayerBlackjacks(settingsManager.getPlayerBlackjacks()+1);
+                statisticsManager.setPlayerBlackjacks(statisticsManager.getPlayerBlackjacks()+1);
             }
             surrenderButton.setNewPos(540,-100);
         }
@@ -1434,7 +1449,7 @@ public class GameManager  implements Serializable{
                 tempCard2=10;
             //if able to split
             if(tempCard1==tempCard2) {
-                if(hands<settingsManager.getSplitHands() && splitButton.getNewY()!=-100) {
+                if(hands<settingsManager.getSplit() && splitButton.getNewY()!=-100) {
                     whichTable=3;
                 }
                 else {
@@ -1682,7 +1697,7 @@ public class GameManager  implements Serializable{
         }
         //A,A exception when unable to split
         if(hand.get(0).getValue()==1 && hand.get(1).getValue()==1 && hand.size()==2) {
-            if(hands==settingsManager.getSplitHands()) {
+            if(hands==settingsManager.getSplit()) {
                 switch(decks) {
                     case 1:
                     case 2:
@@ -1732,9 +1747,10 @@ public class GameManager  implements Serializable{
         return action;
     }
 
-    public void loadData(ChipManager chipManager,Settings settingsManager) {
+    public void loadData(ChipManager chipManager,SettingsManager settingsManager, StatisticsManager statisticsManager) {
         this.chipManager=chipManager;
         this.settingsManager=settingsManager;
+        this.statisticsManager=statisticsManager;
 
         sideBetLeft.load();
         sideBetRight.load();

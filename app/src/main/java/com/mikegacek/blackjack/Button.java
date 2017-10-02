@@ -9,8 +9,8 @@ import com.mikegacek.blackjack.framework.math.Rectangle;
 public class Button extends Rectangle{
 
     private int width,height,rotation;
-    private boolean inAnimation;
-    private float xPos,yPos,newX,newY,alpha,scaleX,scaleY,newScaleX,newScaleY;
+    private boolean on;
+    private float xPos,yPos,newX,newY,alpha,scaleX,scaleY,newScaleX,newScaleY,red,green,blue;
     private transient TextureRegion textureRegion;
     private boolean pressed;
 
@@ -22,8 +22,11 @@ public class Button extends Rectangle{
         yPos=posY;
         newX=xPos;
         newY=yPos;
+        red=.25f;
+        green=.25f;
+        blue=.25f;
         alpha=1;
-        inAnimation=false;
+        on=false;
         scaleX=1;
         scaleY=1;
         newScaleX=1;
@@ -40,8 +43,11 @@ public class Button extends Rectangle{
         yPos=posY;
         newX=xPos;
         newY=yPos;
+        red=.25f;
+        green=.25f;
+        blue=.25f;
         alpha=1;
-        inAnimation=false;
+        on=false;
         scaleX=1;
         scaleY=1;
         newScaleX=1;
@@ -70,6 +76,18 @@ public class Button extends Rectangle{
 
     public float getNewY() { return newY;}
 
+    public int getRedi() {return (int) (red*255);}
+
+    public float getRedf() {return red;}
+
+    public int getGreeni() {return (int) (green*255);}
+
+    public float getGreenf() {return green;}
+
+    public int getBluei() {return (int) (blue*255);}
+
+    public float getBluef() {return blue;}
+
     public float getAlpha() {
         return alpha;
     }
@@ -95,7 +113,7 @@ public class Button extends Rectangle{
         }
     }
 
-    public boolean getInAnimation() { return inAnimation;}
+    public boolean getOn() { return on;}
 
     public void setPos(float x, float y) {
         this.setRectPos(x-this.width/2,y-this.height/2);
@@ -108,12 +126,24 @@ public class Button extends Rectangle{
         newY=y;
     }
 
+    public void setRGBi(int r, int g, int b) {
+        red=(r/255f);
+        green = (g/255f);
+        blue = (b/255f);
+    }
+
+    public void setRGBf(float r, float g, float b) {
+        red=r;
+        green=g;
+        blue=b;
+    };
+
     public void setAlpha(float a) {
         alpha=a;
     }
 
-    public void setInAnimation(boolean b) {
-        inAnimation=b;
+    public void setOn(boolean b) {
+        on=b;
     }
 
     public void setTextureRegion(TextureRegion tr) {

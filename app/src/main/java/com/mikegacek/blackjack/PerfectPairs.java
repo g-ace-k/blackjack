@@ -13,15 +13,15 @@ import java.util.ArrayList;
 
 public class PerfectPairs implements SideBets,Serializable {
 
-    private int version,oldVersion;
-    private int payout,oldPayout,bet;
+    private int version;
+    private int payout,bet,position;
     private transient ArrayList<TextureRegion> payouts;
 
     public PerfectPairs(int version) {
         this.version=version;
         payout=-1;
-        oldPayout=-1;
         bet=0;
+        position=0;
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
     }
@@ -51,24 +51,22 @@ public class PerfectPairs implements SideBets,Serializable {
         return payout;
     }
 
+    @Override
+    public int getPosition() {
+        return 0;
+    }
+
     public void setPayout(int payout) {
         this.payout = payout;
     }
 
-    public int getOldPayout() {
-        return oldPayout;
+    @Override
+    public void setPosition(int position) {
+
     }
 
-    public void setOldPayout(int oldPayout) {
-        this.oldPayout = oldPayout;
-    }
-
-    public int getOldVersion() { return oldVersion;}
-
-    public void setOldVersion(int v) { oldVersion=v;}
     @Override
     public void resetPayout() {
-        oldPayout=payout;
         payout=-1;
     }
 
@@ -77,7 +75,7 @@ public class PerfectPairs implements SideBets,Serializable {
     //Value goes from 1 Ace to 13 King
     //Suit goes 0 club, 1 diamond, 2 heart, 3 spades
     @Override
-    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards,int bet,Settings settingsManager) {
+    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards,int bet,StatisticsManager statisticsManager) {
         Card card1=playerCards.get(0);
         Card card2=playerCards.get(1);
         this.bet=bet;
@@ -99,24 +97,34 @@ public class PerfectPairs implements SideBets,Serializable {
         }
 
         if(bet>0) {
-            settingsManager.setPerfectPairsTotal(settingsManager.getPerfectPairsTotal()+1);
-            settingsManager.setPerfectPairsIncome(settingsManager.getPerfectPairsIncome()+bet*payout);
+            statisticsManager.setPerfectPairsTotal(statisticsManager.getPerfectPairsTotal()+1);
+            statisticsManager.setPerfectPairsIncome(statisticsManager.getPerfectPairsIncome()+bet*payout);
             if(payout>0)
-                settingsManager.setPerfectPairsWon(settingsManager.getPerfectPairsWon()+1);
+                statisticsManager.setPerfectPairsWon(statisticsManager.getPerfectPairsWon()+1);
         }
         if(payout>0)
             Assets.winningBet.play((float)MainScreen.sound*.2f);
         else if(payout<0)
             Assets.multiChips.play((float)MainScreen.sound*.2f);
 
-        oldPayout=payout;
         return payout;
     }
 
     @Override
-    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics,int pay,int v) {
+    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics,int pay,int v,int p) {
         //changing text to green to show winner
         int change=-1;
+        int textOffset=0;
+        int circleOffset=0;
+
+        if(p==0) {
+            textOffset=188;
+            circleOffset=304;
+        }
+        else {
+            textOffset=892;
+            circleOffset=776;
+        }
 
         createPayoutTextures(v);
         //Draw 3 rows
@@ -126,10 +134,10 @@ public class PerfectPairs implements SideBets,Serializable {
         glGraphics.getGl().glColor4f(1,1,1,1);
         if(payouts.size()>=2) {
             batcher.beginBatch(Assets.sideBet);
-            batcher.drawSprite(304, 674, 146, 146, payouts.get(0));
+            batcher.drawSprite(circleOffset, 674, 146, 146, payouts.get(0));
             batcher.endBatch();
             batcher.beginBatch(Assets.payouts);
-            batcher.drawSprite(188,517,376,54,payouts.get(1));
+            batcher.drawSprite(textOffset,517,376,54,payouts.get(1));
             batcher.endBatch();
         }
 
@@ -144,7 +152,7 @@ public class PerfectPairs implements SideBets,Serializable {
                 glGraphics.getGl().glColor4f(0,1,0,1);
             }
             batcher.beginBatch(Assets.payouts);
-            batcher.drawSprite(188, 464-(i-2)*35, 376, 35, payouts.get(i));
+            batcher.drawSprite(textOffset, 464-(i-2)*35, 376, 35, payouts.get(i));
             batcher.endBatch();
             glGraphics.getGl().glColor4f(1, 1, 1, 1);
         }
@@ -153,7 +161,7 @@ public class PerfectPairs implements SideBets,Serializable {
 
     @Override
     public int getPayoutAmount() {
-        return oldPayout*bet;
+        return payout*bet;
     }
 
     public void load() {

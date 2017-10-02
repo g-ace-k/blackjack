@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -19,6 +21,10 @@ import com.mikegacek.blackjack.framework.math.Vector2;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -43,26 +49,39 @@ public class MainScreen extends GLScreen {
     Random random;
     int decks;
     int waitTime;
-    int holdTime;
     int sideBetWaitTime;
     GameManager gameManager;
     GameRenderer gameRenderer;
     ChipManager chipManager;
-    Settings settingsManager;
+    SettingsManager settingsManager;
+    StatisticsManager statisticsManager;
     SlotMachine slotMachine;
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
+    //Test
+
+    int test;
+    float r;
+    float g;
+    float b;
+
     public MainScreen(Game game) {
         super(game);
         waitTime=180;
-        holdTime=61;
         sideBetWaitTime=60;
         guiCam = new Camera2D(glGraphics,1080,1920);
         batcher = new SpriteBatcher(glGraphics,2000);
         touchPoint = new Vector2();
         random = new Random();
+
+
+        //Test
+        test =0;
+        r=1f;
+        g=.416f;
+        b=0;
 
         //loadData();
 
@@ -90,8 +109,9 @@ public class MainScreen extends GLScreen {
             editor.commit();
             decks=8;
             chipManager = new ChipManager();
-            settingsManager = new Settings();
-            gameManager = new GameManager(decks, chipManager, settingsManager);
+            settingsManager = new SettingsManager();
+            statisticsManager = new StatisticsManager();
+            gameManager = new GameManager(decks, chipManager, settingsManager,statisticsManager);
             slotMachine = new SlotMachine(glGraphics, batcher, chipManager);
             gameRenderer = new GameRenderer(glGraphics, batcher, gameManager, chipManager, slotMachine, settingsManager);
             gameManager.shuffle();
@@ -355,6 +375,8 @@ public class MainScreen extends GLScreen {
             editor.putInt("com.blackjack.state",state);
             editor.commit();
             gameManager.cardsToDiscard();
+            gameManager.setOldSideBetLeft(gameManager.getSideBetLeft());
+            gameManager.setOldSideBetRight(gameManager.getSideBetRight());
             gameManager.getSideBetLeft().resetPayout();
             gameManager.getSideBetRight().resetPayout();
             waitTime=180;
@@ -538,6 +560,7 @@ public class MainScreen extends GLScreen {
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
                     settingsManager.loadSettings();
+                    settingsManager.enterSettingsCheck();
                     editor.putInt("disableBack",1);
                     editor.commit();
                 }
@@ -630,7 +653,7 @@ public class MainScreen extends GLScreen {
             touchPoint.set(event.x,event.y);
             guiCam.touchToWorld(touchPoint);
             if(event.type==TouchEvent.TOUCH_DRAGGED || event.type==TouchEvent.TOUCH_DOWN) {
-                if(settingsManager.getPage()==1) {
+                /*if(settingsManager.getPage()==1) {
                     settingsManager.getDeckLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getDeckLeft(), touchPoint));
                     settingsManager.getDeckRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getDeckRight(), touchPoint));
                     settingsManager.getPenLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getPenLeft(), touchPoint));
@@ -643,12 +666,27 @@ public class MainScreen extends GLScreen {
                     settingsManager.getSplitRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getSplitRight(),touchPoint));
                     settingsManager.getDoubleLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getDoubleLeft(),touchPoint));
                     settingsManager.getDoubleRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getDoubleRight(),touchPoint));
+                }*/
+
+                if(OverlapTester.pointInRectangle(settingsManager.getDeckPenetration(),touchPoint)) {
+                    if(touchPoint.x<=settingsManager.getDeckPenetration().getBarXStart()) {
+                        settingsManager.getDeckPenetration().setxPos(settingsManager.getDeckPenetration().getBarXStart());
+                    }
+                    else if(touchPoint.x>=settingsManager.getDeckPenetration().getBarXEnd()) {
+                        settingsManager.getDeckPenetration().setxPos(settingsManager.getDeckPenetration().getBarXEnd());
+                    }
+                    else {
+                        settingsManager.getDeckPenetration().setxPos(touchPoint.x);
+                    }
+                    settingsManager.setPenetration((int)(settingsManager.getDeckPenetration().getSliderPlacement()*100));
+
                 }
 
             }
 
 
             if(event.type==TouchEvent.TOUCH_UP) {
+                /*
                 if(settingsManager.getPage()==1) {
                     settingsManager.getDeckLeft().setPressed(false);
                     settingsManager.getDeckRight().setPressed(false);
@@ -662,25 +700,173 @@ public class MainScreen extends GLScreen {
                     settingsManager.getSplitRight().setPressed(false);
                     settingsManager.getDoubleLeft().setPressed(false);
                     settingsManager.getDoubleRight().setPressed(false);
+                }*/
+                if(OverlapTester.pointInRectangle(settingsManager.getDeck1(),touchPoint)) {
+                    settingsManager.setDecks(1);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck1(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck2(),touchPoint)) {
+                    settingsManager.setDecks(2);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck2(),settingsManager.getDeck1(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck3(),touchPoint)) {
+                    settingsManager.setDecks(3);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck3(),settingsManager.getDeck2(),settingsManager.getDeck1(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck4(),touchPoint)) {
+                    settingsManager.setDecks(4);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck4(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck1(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck5(),touchPoint)) {
+                    settingsManager.setDecks(5);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck5(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck1(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck6(),touchPoint)) {
+                    settingsManager.setDecks(6);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck6(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck1(),settingsManager.getDeck7(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck7(),touchPoint)) {
+                    settingsManager.setDecks(7);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck7(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck1(),settingsManager.getDeck8());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck8(),touchPoint)) {
+                    settingsManager.setDecks(8);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDeck8(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck1());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getCSMToggle(),touchPoint)) {
+                    settingsManager.setCsm(!settingsManager.getCSM());
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getCSMToggle());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeckPenetration(),touchPoint)) {
+                    if(touchPoint.x<=settingsManager.getDeckPenetration().getBarXStart()) {
+                        settingsManager.getDeckPenetration().setxPos(settingsManager.getDeckPenetration().getBarXStart());
+                    }
+                    else if(touchPoint.x>=settingsManager.getDeckPenetration().getBarXEnd()) {
+                        settingsManager.getDeckPenetration().setxPos(settingsManager.getDeckPenetration().getBarXEnd());
+                    }
+                    else {
+                        settingsManager.getDeckPenetration().setxPos(touchPoint.x);
+                    }
 
-                if(OverlapTester.pointInRectangle(settingsManager.getDeckButton(),touchPoint)) {
-                    Assets.button.play(sound);
-                    settingsManager.setPage(1);
+                    settingsManager.setPenetration((int)(settingsManager.getDeckPenetration().getSliderPlacement()*100));
+
                 }
-                else if(OverlapTester.pointInRectangle(settingsManager.getGameplayButton(),touchPoint)) {
-                    Assets.button.play(sound);
-                    settingsManager.setPage(2);
+                else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays32(),touchPoint)) {
+                    settingsManager.setBlackjackPays(1.5);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays11());
                 }
-                else if(OverlapTester.pointInRectangle(settingsManager.getSidebetButton(),touchPoint)) {
-                    Assets.button.play(sound);
-                    settingsManager.setPage(3);
+                else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays75(),touchPoint)) {
+                    settingsManager.setBlackjackPays(1.4);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays11());
                 }
-                else if(OverlapTester.pointInRectangle(settingsManager.getExitButton(),touchPoint)) {
+                else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays65(),touchPoint)) {
+                    settingsManager.setBlackjackPays(1.2);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays11());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays11(),touchPoint)) {
+                    settingsManager.setBlackjackPays(1);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getBlackjackPays11(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays32());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getInsuranceToggle(),touchPoint)) {
+                    settingsManager.setInsurance(!settingsManager.getInsurance());
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getInsuranceToggle());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSurrenderToggle(),touchPoint)) {
+                    settingsManager.setSurrender(!settingsManager.getSurrender());
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getSurrenderToggle());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDealerStand(),touchPoint)) {
+                    settingsManager.setDealer(1);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDealerStand(),settingsManager.getDealerHit());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDealerHit(),touchPoint)) {
+                    settingsManager.setDealer(-1);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getDealerHit(),settingsManager.getDealerStand());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSplit2(),touchPoint)) {
+                    settingsManager.setSplit(2);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getSplit2(),settingsManager.getSplit3(),settingsManager.getSplit4());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSplit3(),touchPoint)) {
+                    settingsManager.setSplit(3);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getSplit3(),settingsManager.getSplit2(),settingsManager.getSplit4());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSplit4(),touchPoint)) {
+                    settingsManager.setSplit(4);
+                    //thread to change color here
+                    pressSettingButton(settingsManager.getSplit4(),settingsManager.getSplit3(),settingsManager.getSplit2());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getResplitAcesToggle(),touchPoint)) {
+                    settingsManager.setResplit(!settingsManager.getResplit());
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getResplitAcesToggle());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getHitSplitAcesToggle(),touchPoint)) {
+                    settingsManager.setHitAces(!settingsManager.getHitAces());
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getHitSplitAcesToggle());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDoubleSplitAcesToggle(),touchPoint)) {
+                    if(settingsManager.getDas()==false && settingsManager.getDoubleAces()==false) {
+                        glGame.runOnUiThread(new Runnable(){
+                            public void run() {
+                                Toast.makeText(glGame,"Double after split must be allowed.",Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    else {
+                        settingsManager.setDoubleAces(!settingsManager.getDoubleAces());
+                        //thread to toggle color change and move toggle circle
+                        pressToggle(settingsManager.getDoubleSplitAcesToggle());
+                    }
+                    Log.d("DOUBLEACES","DOUBLE ACES is " + settingsManager.getDoubleAces());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDoubleAfterSplitToggle(),touchPoint)) {
+                    settingsManager.setDas(!settingsManager.getDas());
+                    if(settingsManager.getDas()==false && settingsManager.getDoubleAces()==true) {
+                        settingsManager.setDoubleAces(false);
+                        //thread to toggle color change and move toggle circle
+                        pressToggle(settingsManager.getDoubleSplitAcesToggle());
+                    }
+                    //thread to toggle color change and move toggle circle
+                    pressToggle(settingsManager.getDoubleAfterSplitToggle());
+                    Log.d("DOUBLEACES","DOUBLE ACES is " + settingsManager.getDoubleAces());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDoubleAny2(),touchPoint)) {
+                    settingsManager.setDoubleDown(1);
+                    pressSettingButton(settingsManager.getDoubleAny2(),settingsManager.getDouble911(),settingsManager.getDouble1011());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDouble911(),touchPoint)) {
+                    settingsManager.setDoubleDown(2);
+                    pressSettingButton(settingsManager.getDouble911(),settingsManager.getDoubleAny2(),settingsManager.getDouble1011());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDouble1011(),touchPoint)) {
+                    settingsManager.setDoubleDown(3);
+                    pressSettingButton(settingsManager.getDouble1011(),settingsManager.getDouble911(),settingsManager.getDoubleAny2());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getExitSettings(),touchPoint)) {
 
                     editor.putInt("disableBack",1);
                     editor.commit();
-
                     glGame.runOnUiThread(new Runnable(){
                         public void run() {
                             if(!settingsManager.wereSettingsChanged()) {
@@ -759,6 +945,7 @@ public class MainScreen extends GLScreen {
 
 
                 }
+                /*
                 else if(OverlapTester.pointInRectangle(settingsManager.getResetStats(),touchPoint)) {
                     glGame.runOnUiThread(new Runnable(){
                         public void run() {
@@ -778,89 +965,8 @@ public class MainScreen extends GLScreen {
                             }
                     });
                 }
-                else if(settingsManager.getPage()==1) {
-                    if(OverlapTester.pointInRectangle(settingsManager.getDeckLeft(),touchPoint)) {
-                        settingsManager.setDecks(settingsManager.getDecks()-1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDeckRight(),touchPoint)) {
-                        settingsManager.setDecks(settingsManager.getDecks()+1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getPenLeft(),touchPoint) && holdTime>30) {
-                        settingsManager.setPenetration(settingsManager.getPenetration()-1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getPenRight(),touchPoint) && holdTime>30) {
-                        settingsManager.setPenetration(settingsManager.getPenetration()+1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getCsmSelect(),touchPoint)) {
-                        settingsManager.setCSM(!settingsManager.getCSM());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getGreenTable(),touchPoint)) {
-                        settingsManager.setBackgroundTexture(Assets.green);
-                        settingsManager.setBackground(1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getBlueTable(),touchPoint)) {
-                        settingsManager.setBackgroundTexture(Assets.blue);
-                        settingsManager.setBackground(2);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getRedTable(),touchPoint)) {
-                        settingsManager.setBackgroundTexture(Assets.red);
-                        settingsManager.setBackground(3);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getPurpleTable(),touchPoint)) {
-                        settingsManager.setBackgroundTexture(Assets.purple);
-                        settingsManager.setBackground(4);
-                    }
-                }
-                else if(settingsManager.getPage()==2) {
-                    if(OverlapTester.pointInRectangle(settingsManager.getInsuranceButton(),touchPoint)) {
-                        settingsManager.setInsurance(!settingsManager.getInsurance());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getSurrenderButton(),touchPoint)) {
-                        settingsManager.setSurrender(!settingsManager.getSurrender());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDealerButton(),touchPoint)) {
-                        settingsManager.reverseDealer();
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getResplitAcesButton(),touchPoint)) {
-                        settingsManager.setResplit(!settingsManager.getResplit());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getHitSplitAcesButton(),touchPoint)) {
-                        settingsManager.setHitAces(!settingsManager.getHitAces());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDoubleSplitAcesButton(),touchPoint)) {
-                        if(settingsManager.getDas()==false) {
-                            glGame.runOnUiThread(new Runnable(){
-                                public void run() {
-                                    Toast.makeText(glGame,"Double after split must be allowed.",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                        settingsManager.setDoubleAces(!settingsManager.getDoubleAces());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDoubleAfterSplitButton(),touchPoint)) {
-                        settingsManager.setDas(!settingsManager.getDas());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackLeft(),touchPoint)) {
-                        settingsManager.leftBlackjackPays();
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackRight(),touchPoint)) {
-                        settingsManager.rightBlackjackPays();
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getSplitLeft(),touchPoint)) {
-                        settingsManager.setSplitHands(settingsManager.getSplitHands()-1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getSplitRight(),touchPoint)) {
-                        settingsManager.setSplitHands(settingsManager.getSplitHands()+1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDoubleLeft(),touchPoint)) {
-                        settingsManager.setDoubleDown(settingsManager.getDoubleDown()-1);
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getDoubleRight(),touchPoint)) {
-                        settingsManager.setDoubleDown(settingsManager.getDoubleDown()+1);
-                    }
-                }
-                else if(settingsManager.getPage()==3) {
-                    if(OverlapTester.pointInRectangle(settingsManager.getPerfectPairsButton(),touchPoint)) {
+                */
+                    /*if(OverlapTester.pointInRectangle(settingsManager.getPerfectPairsButton(),touchPoint)) {
                         if(settingsManager.getDecks()<2) {
                             glGame.runOnUiThread(new Runnable(){
                                 public void run() {
@@ -882,34 +988,11 @@ public class MainScreen extends GLScreen {
                             });
                         }
                         settingsManager.setTwentyOneV2(!settingsManager.getTwentyOneV2());
-                    }
-                }
-                holdTime=61;
+                    }*/
             }
 
         }
 
-        if(settingsManager.getPenLeft().getPressed()) {
-            holdTime--;
-            if(holdTime==30) {
-                settingsManager.setPenetration(settingsManager.getPenetration() - 5);
-            }
-            else if(holdTime<=15) {
-                holdTime=31;
-            }
-        }
-        else if(settingsManager.getPenRight().getPressed()) {
-            holdTime--;
-            if(holdTime==30) {
-                settingsManager.setPenetration(settingsManager.getPenetration() + 5);
-            }
-            else if(holdTime<=15) {
-                holdTime=31;
-            }
-        }
-        else {
-            holdTime=61;
-        }
     }
 
 
@@ -974,9 +1057,6 @@ public class MainScreen extends GLScreen {
         }
 
         //Test for background
-        batcher.beginBatch(Assets.testSettings);
-        batcher.drawSprite(540,960,1080,1920,Assets.testSettingsBackground);
-        batcher.endBatch();
 
         gl.glDisable(GL10.GL_BLEND);
     }
@@ -1112,6 +1192,164 @@ public class MainScreen extends GLScreen {
         saveData();
     }
 
+    public void pressSettingButton(Button on,Button... off) {
+        final Button button=on;
+        final Button[] buttons=off;
+
+        Thread thread;
+
+        button.setOn(true);
+        for (Button b: buttons) {
+            b.setOn(false);
+        }
+        glGame.runOnUiThread(new Runnable(){
+            public void run() {
+                boolean stillRunning=true;
+
+                while(stillRunning) {
+                    stillRunning=false;
+                    if(changeColors(button)==true) {
+                        stillRunning=true;
+                    }
+                    for(Button b: buttons) {
+                        if(changeColors(b)==true) {
+                            stillRunning=true;
+                        }
+                    }
+                    SystemClock.sleep(2);
+                }
+                Log.d("DONE","DONE");
+            }
+
+            public boolean changeColors(Button b) {
+                boolean changed=false;
+                if(b.getOn()==false) {
+                    if (b.getRedf() > .25f) {
+                        b.setRGBf(b.getRedf() - .0125f, b.getGreenf(), b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(.25f,b.getGreenf(),b.getBluef());
+                    if (b.getGreenf() > .25f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf() - .002766f, b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),.25f,b.getBluef());
+                    if (b.getBluef() < .25f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf(), b.getBluef() + .004166f);
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),b.getGreenf(),.25f);
+                }
+                else {
+                    if (b.getRedf() < 1f) {
+                        b.setRGBf(b.getRedf() + .0125f, b.getGreenf(), b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(1f,b.getGreenf(),b.getBluef());
+                    if (b.getGreenf() < .416f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf() + .002766f, b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),.416f,b.getBluef());
+                    if (b.getBluef() > 0) {
+                        b.setRGBf(b.getRedf(), b.getGreenf(), b.getBluef() - .004166f);
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),b.getGreenf(),0f);
+                }
+
+
+                return changed;
+            }
+        });
+    }
+
+    public void pressToggle(Toggle t) {
+        final Toggle toggle=t;
+        toggle.setOn(!toggle.getOn());
+        glGame.runOnUiThread(new Runnable(){
+            public void run() {
+                boolean stillRunning=true;
+
+                while(stillRunning) {
+                    stillRunning=false;
+                    if(changeColorsMoveCircle(toggle)==true) {
+                        stillRunning=true;
+                    }
+                    SystemClock.sleep(2);
+                }
+                Log.d("DONE","DONE");
+            }
+
+            public boolean changeColorsMoveCircle(Toggle b) {
+                boolean changed=false;
+                if(b.getOn()==false) {
+                    if (b.getRedf() > .25f) {
+                        b.setRGBf(b.getRedf() - .0125f, b.getGreenf(), b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(.25f,b.getGreenf(),b.getBluef());
+                    if (b.getGreenf() > .25f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf() - .002766f, b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),.25f,b.getBluef());
+                    if (b.getBluef() < .25f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf(), b.getBluef() + .004166f);
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),b.getGreenf(),.25f);
+                    if(b.getCircleXPos()>b.getxPos()-33) {
+                        b.setCircleXPos(b.getCircleXPos() - 1);
+                        changed=true;
+                    }
+                    else {
+                        b.setCircleXPos(b.getxPos()-33);
+                    }
+                }
+                else {
+                    if (b.getRedf() < 1f) {
+                        b.setRGBf(b.getRedf() + .0125f, b.getGreenf(), b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(1f,b.getGreenf(),b.getBluef());
+                    if (b.getGreenf() < .416f) {
+                        b.setRGBf(b.getRedf(), b.getGreenf() + .002766f, b.getBluef());
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),.416f,b.getBluef());
+                    if (b.getBluef() > 0) {
+                        b.setRGBf(b.getRedf(), b.getGreenf(), b.getBluef() - .004166f);
+                        changed=true;
+                    }
+                    else
+                        b.setRGBf(b.getRedf(),b.getGreenf(),0f);
+                    if(b.getCircleXPos()<b.getxPos()+33) {
+                        b.setCircleXPos(b.getCircleXPos() + 1);
+                        changed=true;
+                    }
+                    else {
+                        b.setCircleXPos(b.getxPos()+33);
+                    }
+                }
+
+
+                return changed;
+            }
+        });
+    }
+
     public void saveData() {
         SerializableManager.save(glGame,chipManager,"com.blackjack.chipManager");
         SerializableManager.save(glGame,settingsManager,"com.blackjack.settingsManager");
@@ -1136,7 +1374,7 @@ public class MainScreen extends GLScreen {
         if(chipManager!=null && settingsManager!=null && gameManager!=null && slotMachine!=null && gameRenderer!=null) {
             chipManager.loadData();
             settingsManager.loadData();
-            gameManager.loadData(chipManager, settingsManager);
+            gameManager.loadData(chipManager, settingsManager,statisticsManager);
             slotMachine.loadData(glGraphics, batcher, chipManager);
             gameRenderer.loadData(batcher, glGraphics, gameManager, chipManager, slotMachine, settingsManager, guiCam);
 

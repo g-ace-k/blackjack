@@ -11,31 +11,27 @@ import java.util.ArrayList;
 
 public interface SideBets{
 
-    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards, int bet, Settings settingsManager);
+    public int payout(ArrayList<Card> playerCards, ArrayList<Card> dealerCards, int bet, StatisticsManager statisticsManager);
 
     public void createPayoutTextures(int v);
 
     public void resetPayout();
 
-    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics, int pay, int version);
+    public void drawPayouts(SpriteBatcher batcher, GLGraphics glGraphics, int pay, int version,int p);
 
     public int getPayoutAmount();
 
     public int getPayout();
 
-    public int getOldPayout();
-
-    public int getOldVersion();
+    public int getPosition();
 
     public int getVersion();
 
     public void setVersion(int v);
 
-    public void setOldVersion(int v);
-
     public void setPayout(int payout);
 
-    public void setOldPayout(int payout);
+    public void setPosition(int position);
 
     public void load();
 }

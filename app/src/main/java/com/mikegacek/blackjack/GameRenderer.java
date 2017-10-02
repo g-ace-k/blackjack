@@ -24,7 +24,7 @@ public class GameRenderer implements Serializable{
     private transient GameManager gameManager;
     private transient ChipManager chipManager;
     private transient SlotMachine slotMachine;
-    private transient Settings settingsManager;
+    private transient SettingsManager settingsManager;
     private transient Camera2D cam;
     private float bettingAlphas,insuranceAlphas;
     private float hand1Alpha,hand2Alpha,hand3Alpha,hand4Alpha,dealerHandAlpha;
@@ -32,7 +32,7 @@ public class GameRenderer implements Serializable{
     private Texture backgroundTexture;
     private TextureRegion backgroundTextureRegion;
 
-    public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, Settings settings) {
+    public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settings) {
         this.batcher=batcher;
         this.glGraphics=glGraphics;
         this.gameManager=gameManager;
@@ -88,161 +88,94 @@ public class GameRenderer implements Serializable{
 
 
     private void renderSettings() {
-        String netIncome;
+        //Background
+        batcher.beginBatch(Assets.settingsBackground);
+        batcher.drawSprite(540,960,1080,1920,Assets.settingsBack);
+        batcher.endBatch();
 
-        switch(settingsManager.getPage()) {
-            case 1:
-                batcher.beginBatch(Assets.menu);
-                batcher.drawSprite(270,480,540,960,Assets.deckMenu);
-                batcher.endBatch();
+        //Toggles with Color
+        renderToggleWithColor(Assets.buttons,settingsManager.getCSMToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getInsuranceToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getSurrenderToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getResplitAcesToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getHitSplitAcesToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getDoubleSplitAcesToggle());
+        renderToggleWithColor(Assets.buttons,settingsManager.getDoubleAfterSplitToggle());
 
-                renderPressedButton(Assets.buttons,settingsManager.getDeckLeft());
-                renderPressedButton(Assets.buttons,settingsManager.getDeckRight());
-                //381 865
-                renderSettingsNumber(381,866,settingsManager.getDecks()+"",.75f);
+        //Slider
 
+        renderSlider(Assets.buttons,settingsManager.getDeckPenetration());
+        CalibriFont.drawNumbersBackwardsAndEqualDistance(settingsManager.getPenetration()+"",908,1581,1,1,1,1,.55f,.55f,batcher,glGraphics);
 
-                renderPressedButton(Assets.buttons,settingsManager.getPenLeft());
-                renderPressedButton(Assets.buttons,settingsManager.getPenRight());
+        //Buttons with Color
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck1());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck2());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck3());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck4());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck5());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck6());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck7());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDeck8());
 
-                String pen= settingsManager.getPenetration()+"%";
-                float offset=21*.75f+(pen.length()-2)*14*.75f;
+        renderButtonWithColor(Assets.buttons,settingsManager.getBlackjackPays32());
+        renderButtonWithColor(Assets.buttons,settingsManager.getBlackjackPays75());
+        renderButtonWithColor(Assets.buttons,settingsManager.getBlackjackPays65());
+        renderButtonWithColor(Assets.buttons,settingsManager.getBlackjackPays11());
 
-                renderSettingsNumber(381-offset,776,pen,.75f);
+        renderButtonWithColor(Assets.buttons,settingsManager.getDealerStand());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDealerHit());
 
-                renderRadioButton(382,820,Assets.radioButtonOn,Assets.buttons,settingsManager.getCSM());
-                renderRadioButton(215,600,Assets.radioButtonOn,Assets.buttons,settingsManager.getBackground()==1);
-                renderRadioButton(325,600,Assets.radioButtonOn,Assets.buttons,settingsManager.getBackground()==2);
-                renderRadioButton(215,464,Assets.radioButtonOn,Assets.buttons,settingsManager.getBackground()==3);
-                renderRadioButton(325,464,Assets.radioButtonOn,Assets.buttons,settingsManager.getBackground()==4);
+        renderButtonWithColor(Assets.buttons,settingsManager.getSplit2());
+        renderButtonWithColor(Assets.buttons,settingsManager.getSplit3());
+        renderButtonWithColor(Assets.buttons,settingsManager.getSplit4());
 
-                renderSettingsNumber(240,293,""+settingsManager.getPlayerBlackjacks(),.5f);
-                renderSettingsNumber(245,260,""+settingsManager.getDealerBlackjacks(),.5f);
-                renderSettingsNumber(204,228,""+settingsManager.getHandsPlayed(),.5f);
-                renderSettingsNumber(179,195,""+settingsManager.getHandsWon(),.5f);
-                renderSettingsNumber(172,163,""+settingsManager.getHandsLost(),.5f);
-                renderSettingsNumber(177,130,"$"+settingsManager.getMoneyBet(),.5f);
-                renderSettingsNumber(187,98,"$"+settingsManager.getMoneyWon(),.5f);
-                renderSettingsNumber(180,65,"$"+settingsManager.getMoneyLost(),.5f);
+        renderButtonWithColor(Assets.buttons,settingsManager.getDoubleAny2());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDouble911());
+        renderButtonWithColor(Assets.buttons,settingsManager.getDouble1011());
+        //Exit Button
 
-                int netTotal=(settingsManager.getMoneyWon()-settingsManager.getMoneyLost());
-                if(netTotal>0) {
-                    glGraphics.getGl().glColor4f(0, 1, 0, 1);
-                    netIncome="+$"+netTotal;
-                }
-                else if(netTotal<0) {
-                    glGraphics.getGl().glColor4f(1, 0, 0, 1);
-                    netIncome="-$"+Math.abs(netTotal);
-                }
-                else {
-                    glGraphics.getGl().glColor4f(1, 1, 1, 1);
-                    netIncome="$"+netTotal;
-                }
-
-                renderSettingsNumber(184,33,netIncome,.5f);
-
-                glGraphics.getGl().glColor4f(1,1,1,1);
-                break;
-            case 2:
-                batcher.beginBatch(Assets.menu);
-                batcher.drawSprite(270,480,540,960,Assets.gameplayMenu);
-                batcher.endBatch();
-
-                renderPressedButton(Assets.buttons,settingsManager.getBlackjackLeft());
-                renderPressedButton(Assets.buttons,settingsManager.getBlackjackRight());
-
-                renderSettingsNumber(360,866,settingsManager.getBlackjackPaysString(),.75f);
-
-                renderPressedButton(Assets.buttons,settingsManager.getSplitLeft());
-                renderPressedButton(Assets.buttons,settingsManager.getSplitRight());
-
-                renderSettingsNumber(381,650,settingsManager.getSplitHands()+"",.75f);
-
-                renderPressedButton(Assets.buttons,settingsManager.getDoubleLeft());
-                renderPressedButton(Assets.buttons,settingsManager.getDoubleRight());
-
-                batcher.beginBatch(Assets.settingsFont);
-                batcher.drawSprite(381,709,settingsManager.getDealerAction().width*.65f,settingsManager.getDealerAction().height*.65f,settingsManager.getDealerAction());
-                batcher.drawSprite(381,425,settingsManager.getDoubleDownFont().width*.5f,settingsManager.getDoubleDownFont().height*.5f,settingsManager.getDoubleDownFont());
-                batcher.endBatch();
-
-                renderRadioButton(382,821,Assets.radioButtonOn,Assets.buttons,settingsManager.getInsurance());
-                renderRadioButton(382,776,Assets.radioButtonOn,Assets.buttons,settingsManager.getSurrender());
-                renderRadioButton(382,605,Assets.radioButtonOn,Assets.buttons,settingsManager.getResplit());
-                renderRadioButton(382,560,Assets.radioButtonOn,Assets.buttons,settingsManager.getHitAces());
-                renderRadioButton(382,515,Assets.radioButtonOn,Assets.buttons,settingsManager.getDoubleAces());
-                renderRadioButton(382,470,Assets.radioButtonOn,Assets.buttons,settingsManager.getDas());
-
-                renderSettingsNumber(214,293,""+settingsManager.getDoubleDownTotal(),.5f);
-                renderSettingsNumber(267,260,""+settingsManager.getDoubleDownWon(),.5f);
-                renderSettingsNumber(259,228,""+settingsManager.getDoubleDownLost(),.5f);
-                renderSettingsNumber(116,195,""+settingsManager.getSplitsTotal(),.5f);
-                renderSettingsNumber(216,163,""+settingsManager.getInsuranceTotal(),.5f);
-                renderSettingsNumber(269,130,""+settingsManager.getInsuranceWon(),.5f);
-                renderSettingsNumber(167,98,""+settingsManager.getSurrenderTotal(),.5f);
-
-                break;
-            case 3:
-                batcher.beginBatch(Assets.menu);
-                batcher.drawSprite(270,480,540,960,Assets.sidebetMenu);
-                batcher.endBatch();
-
-                renderRadioButton(382,821,Assets.radioButtonOn,Assets.buttons,settingsManager.getPerfectPairs());
-                renderRadioButton(382,648,Assets.radioButtonOn,Assets.buttons,settingsManager.getTwentyOneV1());
-                renderRadioButton(382,468,Assets.radioButtonOn,Assets.buttons,settingsManager.getTwentyOneV2());
-
-                renderSettingsNumber(281,293,""+settingsManager.getPerfectPairsTotal(),.5f);
-                renderSettingsNumber(246,260,""+settingsManager.getPerfectPairsWon(),.5f);
-                renderSettingsNumber(190,195,""+settingsManager.getTwentyOneTotal(),.5f);
-                renderSettingsNumber(165,163,""+settingsManager.getTwentyOneWon(),.5f);
-
-                if(settingsManager.getPerfectPairsIncome()>0) {
-                    glGraphics.getGl().glColor4f(0, 1, 0, 1);
-                    netIncome="+$"+settingsManager.getPerfectPairsIncome();
-                }
-                else if(settingsManager.getPerfectPairsIncome()<0) {
-                    glGraphics.getGl().glColor4f(1, 0, 0, 1);
-                    netIncome="-$"+Math.abs(settingsManager.getPerfectPairsIncome());
-                }
-                else {
-                    glGraphics.getGl().glColor4f(1, 1, 1, 1);
-                    netIncome="$"+settingsManager.getPerfectPairsIncome();
-                }
-                renderSettingsNumber(321,228,netIncome,.5f);
-
-                if(settingsManager.getTwentyOneV1Income()>0) {
-                    glGraphics.getGl().glColor4f(0, 1, 0, 1);
-                    netIncome="+$"+settingsManager.getTwentyOneV1Income();
-                }
-                else if(settingsManager.getTwentyOneV1Income()<0) {
-                    glGraphics.getGl().glColor4f(1, 0, 0, 1);
-                    netIncome="-$"+Math.abs(settingsManager.getTwentyOneV1Income());
-                }
-                else {
-                    glGraphics.getGl().glColor4f(1, 1, 1, 1);
-                    netIncome="$"+settingsManager.getTwentyOneV1Income();
-                }
-                renderSettingsNumber(365,130,netIncome,.5f);
-
-                if(settingsManager.getTwentyOneV2Income()>0) {
-                    glGraphics.getGl().glColor4f(0, 1, 0, 1);
-                    netIncome="+$"+settingsManager.getTwentyOneV2Income();
-                }
-                else if(settingsManager.getTwentyOneV2Income()<0) {
-                    glGraphics.getGl().glColor4f(1, 0, 0, 1);
-                    netIncome="-$"+Math.abs(settingsManager.getTwentyOneV2Income());
-                }
-                else {
-                    glGraphics.getGl().glColor4f(1, 1, 1, 1);
-                    netIncome="$"+settingsManager.getTwentyOneV2Income();
-                }
-                renderSettingsNumber(365,98,netIncome,.5f);
-
-                glGraphics.getGl().glColor4f(1,1,1,1);
-
-                break;
-        }
+        renderPressedButton(Assets.buttons,settingsManager.getExitSettings());
+        //Foregound
+        batcher.beginBatch(Assets.settingsForeground);
+        batcher.drawSprite(540,960,1080,1920,Assets.settingsFore);
+        batcher.endBatch();
     }
+
+    private void renderToggleWithColor(Texture t,Toggle toggle) {
+        glGraphics.getGl().glColor4f(toggle.getRedf(),toggle.getGreenf(),toggle.getBluef(),toggle.getAlpha());
+
+        batcher.beginBatch(t);
+        batcher.drawSprite(toggle,Assets.settingsToggle);
+        batcher.endBatch();
+
+        glGraphics.getGl().glColor4f(1,1,1,1);
+        batcher.beginBatch(t);
+        batcher.drawSprite(toggle.getCircleXPos(),toggle.getyPos(),63,63,Assets.settingsToggleCircle);
+        batcher.endBatch();
+    }
+
+    private void renderButtonWithColor(Texture t, Button button) {
+        glGraphics.getGl().glColor4f(button.getRedf(),button.getGreenf(),button.getBluef(),button.getAlpha());
+
+        batcher.beginBatch(t);
+        batcher.drawSprite(button,button.getTextureRegion());
+        batcher.endBatch();
+
+        glGraphics.getGl().glColor4f(1,1,1,1);
+    }
+
+    private void renderSlider(Texture t,Slider slider) {
+        // draw at 280,get Y, 560 long , 9 wide
+        batcher.beginBatch(t);
+        batcher.drawSprite((slider.getxPos()+slider.getBarXStart())/2,slider.getyPos(),(slider.getxPos()-slider.getBarXStart()),9,Assets.settingsSliderOrangeBar);
+        batcher.drawSprite(((slider.getBarXEnd()+slider.getxPos())/2),slider.getyPos(),slider.getBarXEnd()-slider.getxPos(),9,Assets.settingsSliderGrayBar);
+        batcher.endBatch();
+
+        batcher.beginBatch(t);
+        batcher.drawSprite(slider.getxPos(),slider.getyPos(),69,69,Assets.settingsSliderCircle);
+        batcher.endBatch();
+    }
+
 
     private void renderSettingsNumber(float x, float y, String string,float scale) {
 
@@ -260,21 +193,6 @@ public class GameRenderer implements Serializable{
 
 
 
-    }
-
-    private void renderRadioButton(float x, float y, TextureRegion t, Texture texture, boolean flag) {
-        float alpha;
-        if(flag==true)
-            alpha=1;
-        else
-            alpha=0;
-        glGraphics.getGl().glColor4f(1,1,1,alpha);
-
-        batcher.beginBatch(texture);
-        batcher.drawSprite(x,y,t.width,t.height,t);
-        batcher.endBatch();
-
-        glGraphics.getGl().glColor4f(1,1,1,1);
     }
 
     private void renderPressedButton(Texture t, Button b) {
@@ -430,10 +348,10 @@ public class GameRenderer implements Serializable{
                     drawBetsWonLoss(776,575,gameManager.getSideBetRight().getPayoutAmount(),true);
             }
             else {
-                if(gameManager.getSideBetLeft().getOldVersion()>0)
-                    drawBetsWonLoss(304,575,gameManager.getSideBetLeft().getPayoutAmount(),true);
-                if(gameManager.getSideBetRight().getOldVersion()>0)
-                    drawBetsWonLoss(776,575,gameManager.getSideBetRight().getPayoutAmount(),true);
+                if(gameManager.getOldSideBetLeft().getVersion()>0)
+                    drawBetsWonLoss(304,575,gameManager.getOldSideBetLeft().getPayoutAmount(),true);
+                if(gameManager.getOldSideBetRight().getVersion()>0)
+                    drawBetsWonLoss(776,575,gameManager.getOldSideBetRight().getPayoutAmount(),true);
             }
 
         }
@@ -971,17 +889,17 @@ public class GameRenderer implements Serializable{
 
 
         if(state==2) {
-            gameManager.getSideBetLeft().drawPayouts(batcher, glGraphics, gameManager.getSideBetLeft().getOldPayout(),gameManager.getSideBetLeft().getOldVersion());
+            gameManager.getOldSideBetLeft().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetLeft().getPayout(),gameManager.getOldSideBetLeft().getVersion(),gameManager.getOldSideBetLeft().getPosition());
         }
         else
-            gameManager.getSideBetLeft().drawPayouts(batcher,glGraphics,gameManager.getSideBetLeft().getPayout(),gameManager.getSideBetLeft().getVersion());
+            gameManager.getSideBetLeft().drawPayouts(batcher,glGraphics,gameManager.getSideBetLeft().getPayout(),gameManager.getSideBetLeft().getVersion(),gameManager.getSideBetLeft().getPosition());
 
 
         if(state==2) {
-            gameManager.getSideBetRight().drawPayouts(batcher, glGraphics, gameManager.getSideBetRight().getOldPayout(),gameManager.getSideBetRight().getOldVersion());
+            gameManager.getOldSideBetRight().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetRight().getPayout(),gameManager.getOldSideBetRight().getVersion(),gameManager.getOldSideBetRight().getPosition());
         }
         else
-            gameManager.getSideBetRight().drawPayouts(batcher,glGraphics,gameManager.getSideBetRight().getPayout(),gameManager.getSideBetRight().getVersion());
+            gameManager.getSideBetRight().drawPayouts(batcher,glGraphics,gameManager.getSideBetRight().getPayout(),gameManager.getSideBetRight().getVersion(),gameManager.getSideBetRight().getPosition());
 
 
         glGraphics.getGl().glColor4f(1,1,1,1);
@@ -1192,7 +1110,7 @@ public class GameRenderer implements Serializable{
     }
 
 
-    public void loadData(SpriteBatcher batcher, GLGraphics glGraphics, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, Settings settingsManager, Camera2D cam) {
+    public void loadData(SpriteBatcher batcher, GLGraphics glGraphics, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settingsManager, Camera2D cam) {
 
         this.batcher=batcher;
         this.glGraphics=glGraphics;
