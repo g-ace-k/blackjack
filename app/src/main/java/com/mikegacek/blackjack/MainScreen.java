@@ -701,7 +701,171 @@ public class MainScreen extends GLScreen {
                     settingsManager.getDoubleLeft().setPressed(false);
                     settingsManager.getDoubleRight().setPressed(false);
                 }*/
-                if(OverlapTester.pointInRectangle(settingsManager.getDeck1(),touchPoint)) {
+                if(settingsManager.getListLocation()!=0) {
+                    if(OverlapTester.pointInRectangle(settingsManager.getListButton(),touchPoint) && settingsManager.getListLocation()==1) {
+                        if(touchPoint.y>(settingsManager.getListButton().getYPos()+120)) {
+                            //Pressed Perfect Pairs
+                            if(settingsManager.getDecks()<2) {
+                                glGame.runOnUiThread(new Runnable(){
+                                    public void run() {
+                                        Toast.makeText(glGame,"Not enough decks to play this side bet.",Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                            else
+                                gameManager.setSideBetLeft( new PerfectPairs(1,0));
+                        }
+                        else if(touchPoint.y>(settingsManager.getListButton().getYPos()-20)) {
+                            //Pressed 21+3 1-8 decks
+                            gameManager.setSideBetLeft( new TwentyOnePlusThree(1,0));
+                        }
+                        else if(touchPoint.y>(settingsManager.getListButton().getYPos()-181)) {
+                            //Pressed 21+3 3-8 decks
+                            if(settingsManager.getDecks()>=3)
+                                gameManager.setSideBetLeft( new TwentyOnePlusThree(2,0));
+                            else {
+                                glGame.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        Toast.makeText(glGame, "Not enough decks to play this side bet.", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        }
+                        else if(touchPoint.x<settingsManager.getListButton().getXPos()) {
+                            //Pressed None
+                            gameManager.getSideBetLeft().setVersion(0);
+                        }
+                            //set list scale y from 1 to 0, rotate arrow 180
+                        settingsManager.setListLocation(0);
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean stillRunning=true;
+                                while(stillRunning) {
+                                    stillRunning=false;
+                                    if(settingsManager.getListLocation()==0) {
+                                        if(settingsManager.getSideBet1Arrow().getRotation()!=0) {
+                                            settingsManager.getSideBet1Arrow().setRotation(settingsManager.getSideBet1Arrow().getRotation()+9);
+                                            stillRunning=true;
+                                            if(settingsManager.getSideBet1Arrow().getRotation()>=360) {
+                                                settingsManager.getSideBet1Arrow().setRotation(0);
+                                            }
+                                        }
+                                        if(settingsManager.getListButton().getScaleY()>0) {
+                                            stillRunning=true;
+                                            settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()-.05f);
+                                            if(settingsManager.getListButton().getScaleY()<=0) {
+                                                settingsManager.getListButton().setScaleY(0);
+                                            }
+                                        }
+                                    }
+                                    else if(settingsManager.getListLocation()==1) {
+                                        if(settingsManager.getSideBet1Arrow().getRotation()!=0) {
+                                            settingsManager.getSideBet1Arrow().setRotation(settingsManager.getSideBet1Arrow().getRotation()+9);
+                                            stillRunning=true;
+                                            if(settingsManager.getSideBet1Arrow().getRotation()>=170 && settingsManager.getSideBet1Arrow().getRotation()<=190) {
+                                                settingsManager.getSideBet1Arrow().setRotation(180);
+                                            }
+                                        }
+                                        if(settingsManager.getListButton().getScaleY()<1) {
+                                            stillRunning=true;
+                                            settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()+.05f);
+                                            if(settingsManager.getListButton().getScaleY()>=1) {
+                                                settingsManager.getListButton().setScaleY(1);
+                                            }
+                                        }
+                                    }
+
+                                    SystemClock.sleep(5);
+                                }
+
+
+                            }
+                        });
+                        t.start();
+                    }
+                    else if(OverlapTester.pointInRectangle(settingsManager.getListButton(),touchPoint) && settingsManager.getListLocation()==2) {
+                        if(touchPoint.y>(settingsManager.getListButton().getYPos()+120)) {
+                            //Pressed Perfect Pairs
+                            if(settingsManager.getDecks()<2) {
+                                glGame.runOnUiThread(new Runnable(){
+                                    public void run() {
+                                        Toast.makeText(glGame,"Not enough decks to play this side bet.",Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                            else
+                                gameManager.setSideBetRight( new PerfectPairs(1,1));
+                        }
+                        else if(touchPoint.y>(settingsManager.getListButton().getYPos()-20)) {
+                            //Pressed 21+3 1-8 decks
+                            gameManager.setSideBetRight(new TwentyOnePlusThree(1,1));
+                        }
+                        else if(touchPoint.y>(settingsManager.getListButton().getYPos()-181)) {
+                            //Pressed 21+3 3-8 decks
+                            if(settingsManager.getDecks()>=3)
+                                gameManager.setSideBetRight(new TwentyOnePlusThree(2,1));
+                            else {
+                                glGame.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(glGame,"Not enough decks to play this side bet.",Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        }
+                        else if(touchPoint.x<settingsManager.getListButton().getXPos()) {
+                            //Pressed None
+                            gameManager.getSideBetRight().setVersion(0);
+                        }
+                            //set list scale y from 1 to 0, rotate arrow 180
+                        settingsManager.setListLocation(0);
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean stillRunning=true;
+                                while(stillRunning) {
+                                    stillRunning=false;
+                                    if(settingsManager.getListLocation()==0) {
+                                        if(settingsManager.getSideBet2Arrow().getRotation()!=0) {
+                                            settingsManager.getSideBet2Arrow().setRotation(settingsManager.getSideBet2Arrow().getRotation()+9);
+                                            stillRunning=true;
+                                            if(settingsManager.getSideBet2Arrow().getRotation()>=360) {
+                                                settingsManager.getSideBet2Arrow().setRotation(0);
+                                            }
+                                        }
+                                        if(settingsManager.getListButton().getScaleY()>0) {
+                                            stillRunning=true;
+                                            settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()-.05f);
+                                            if(settingsManager.getListButton().getScaleY()<=0) {
+                                                settingsManager.getListButton().setScaleY(0);
+                                            }
+                                        }
+                                    }
+                                    else if(settingsManager.getListLocation()==1) {
+                                        if(settingsManager.getSideBet2Arrow().getRotation()!=0) {
+                                            settingsManager.getSideBet2Arrow().setRotation(settingsManager.getSideBet2Arrow().getRotation()+9);
+                                            stillRunning=true;
+                                            if(settingsManager.getSideBet2Arrow().getRotation()>=170 && settingsManager.getSideBet2Arrow().getRotation()<=190) {
+                                                settingsManager.getSideBet2Arrow().setRotation(180);
+                                            }
+                                        }
+                                        if(settingsManager.getListButton().getScaleY()<1) {
+                                            stillRunning=true;
+                                            settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()+.05f);
+                                            if(settingsManager.getListButton().getScaleY()>=1) {
+                                                settingsManager.getListButton().setScaleY(1);
+                                            }
+                                        }
+                                    }
+                                    SystemClock.sleep(5);
+                                }
+                            }
+                        });
+                        t.start();
+                    }
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getDeck1(),touchPoint)) {
                     settingsManager.setDecks(1);
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck1(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
@@ -862,6 +1026,106 @@ public class MainScreen extends GLScreen {
                 else if(OverlapTester.pointInRectangle(settingsManager.getDouble1011(),touchPoint)) {
                     settingsManager.setDoubleDown(3);
                     pressSettingButton(settingsManager.getDouble1011(),settingsManager.getDouble911(),settingsManager.getDoubleAny2());
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSideBet1Arrow(),touchPoint)) {
+                    //scale list from 0 to 1, rotate arrow 180
+                    settingsManager.setListLocation(1);
+                    Thread t = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean stillRunning=true;
+                            while(stillRunning) {
+                                stillRunning=false;
+                                if(settingsManager.getListLocation()==0) {
+                                    if(settingsManager.getSideBet1Arrow().getRotation()!=0) {
+                                        settingsManager.getSideBet1Arrow().setRotation(settingsManager.getSideBet1Arrow().getRotation()+9);
+                                        stillRunning=true;
+                                        if(settingsManager.getSideBet1Arrow().getRotation()>=360) {
+                                            settingsManager.getSideBet1Arrow().setRotation(0);
+                                        }
+                                    }
+                                    if(settingsManager.getListButton().getScaleY()>0) {
+                                        stillRunning=true;
+                                        settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()-.05f);
+                                        if(settingsManager.getListButton().getScaleY()<=0) {
+                                            settingsManager.getListButton().setScaleY(0);
+                                        }
+                                    }
+                                }
+                                else if(settingsManager.getListLocation()==1) {
+                                    if(settingsManager.getSideBet1Arrow().getRotation()!=180) {
+                                        settingsManager.getSideBet1Arrow().setRotation(settingsManager.getSideBet1Arrow().getRotation()+9);
+                                        stillRunning=true;
+                                        if(settingsManager.getSideBet1Arrow().getRotation()>=170 && settingsManager.getSideBet1Arrow().getRotation()<=190) {
+                                            settingsManager.getSideBet1Arrow().setRotation(180);
+                                        }
+                                    }
+                                    if(settingsManager.getListButton().getScaleY()<1) {
+                                        stillRunning=true;
+                                        settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()+.05f);
+                                        if(settingsManager.getListButton().getScaleY()>=1) {
+                                            settingsManager.getListButton().setScaleY(1);
+                                        }
+                                    }
+                                }
+
+                                SystemClock.sleep(5);
+                            }
+
+
+                        }
+                    });
+                    t.start();
+                }
+                else if(OverlapTester.pointInRectangle(settingsManager.getSideBet2Arrow(),touchPoint)) {
+                    //scale list from 0 to 1, rotate arrow 180
+                    settingsManager.setListLocation(2);
+                    Thread t = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean stillRunning=true;
+                            while(stillRunning) {
+                                stillRunning=false;
+                                if(settingsManager.getListLocation()==0) {
+                                    if(settingsManager.getSideBet2Arrow().getRotation()!=0) {
+                                        settingsManager.getSideBet2Arrow().setRotation(settingsManager.getSideBet2Arrow().getRotation()+9);
+                                        stillRunning=true;
+                                        if(settingsManager.getSideBet2Arrow().getRotation()>=360) {
+                                            settingsManager.getSideBet2Arrow().setRotation(0);
+                                        }
+                                    }
+                                    if(settingsManager.getListButton().getScaleY()>0) {
+                                        stillRunning=true;
+                                        settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()-.05f);
+                                        if(settingsManager.getListButton().getScaleY()<=0) {
+                                            settingsManager.getListButton().setScaleY(0);
+                                        }
+                                    }
+                                }
+                                else if(settingsManager.getListLocation()==2) {
+                                    if(settingsManager.getSideBet2Arrow().getRotation()!=180) {
+                                        settingsManager.getSideBet2Arrow().setRotation(settingsManager.getSideBet2Arrow().getRotation()+9);
+                                        stillRunning=true;
+                                        if(settingsManager.getSideBet2Arrow().getRotation()>=170 && settingsManager.getSideBet2Arrow().getRotation()<=190) {
+                                            settingsManager.getSideBet2Arrow().setRotation(180);
+                                        }
+                                    }
+                                    if(settingsManager.getListButton().getScaleY()<1) {
+                                        stillRunning=true;
+                                        settingsManager.getListButton().setScaleY(settingsManager.getListButton().getScaleY()+.05f);
+                                        if(settingsManager.getListButton().getScaleY()>=1) {
+                                            settingsManager.getListButton().setScaleY(1);
+                                        }
+                                    }
+                                }
+
+                                SystemClock.sleep(5);
+                            }
+
+
+                        }
+                    });
+                    t.start();
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getExitSettings(),touchPoint)) {
 
@@ -1196,13 +1460,12 @@ public class MainScreen extends GLScreen {
         final Button button=on;
         final Button[] buttons=off;
 
-        Thread thread;
-
         button.setOn(true);
         for (Button b: buttons) {
             b.setOn(false);
         }
-        glGame.runOnUiThread(new Runnable(){
+        Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 boolean stillRunning=true;
 
@@ -1218,7 +1481,6 @@ public class MainScreen extends GLScreen {
                     }
                     SystemClock.sleep(2);
                 }
-                Log.d("DONE","DONE");
             }
 
             public boolean changeColors(Button b) {
@@ -1268,12 +1530,17 @@ public class MainScreen extends GLScreen {
                 return changed;
             }
         });
+
+        t.start();
+
     }
 
-    public void pressToggle(Toggle t) {
-        final Toggle toggle=t;
+    public void pressToggle(Toggle tg) {
+        final Toggle toggle=tg;
         toggle.setOn(!toggle.getOn());
-        glGame.runOnUiThread(new Runnable(){
+
+        Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 boolean stillRunning=true;
 
@@ -1284,7 +1551,6 @@ public class MainScreen extends GLScreen {
                     }
                     SystemClock.sleep(2);
                 }
-                Log.d("DONE","DONE");
             }
 
             public boolean changeColorsMoveCircle(Toggle b) {
@@ -1348,6 +1614,7 @@ public class MainScreen extends GLScreen {
                 return changed;
             }
         });
+        t.start();
     }
 
     public void saveData() {

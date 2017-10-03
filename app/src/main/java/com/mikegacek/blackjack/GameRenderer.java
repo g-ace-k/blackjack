@@ -132,6 +132,11 @@ public class GameRenderer implements Serializable{
         renderButtonWithColor(Assets.buttons,settingsManager.getDoubleAny2());
         renderButtonWithColor(Assets.buttons,settingsManager.getDouble911());
         renderButtonWithColor(Assets.buttons,settingsManager.getDouble1011());
+
+        batcher.beginBatch(Assets.buttons);
+        batcher.drawSprite(settingsManager.getSideBet1Arrow(),settingsManager.getSideBet1Arrow().getRotation(),settingsManager.getSideBet1Arrow().getTextureRegion());
+        batcher.drawSprite(settingsManager.getSideBet2Arrow(),settingsManager.getSideBet2Arrow().getRotation(),settingsManager.getSideBet2Arrow().getTextureRegion());
+        batcher.endBatch();
         //Exit Button
 
         renderPressedButton(Assets.buttons,settingsManager.getExitSettings());
@@ -139,6 +144,20 @@ public class GameRenderer implements Serializable{
         batcher.beginBatch(Assets.settingsForeground);
         batcher.drawSprite(540,960,1080,1920,Assets.settingsFore);
         batcher.endBatch();
+
+        batcher.beginBatch(Assets.buttons);
+        batcher.drawSprite(settingsManager.getListButton().getXPos(),settingsManager.getListButton().getYPos()-(1-settingsManager.getListButton().getScaleY())*settingsManager.getListButton().getHeight()/2,settingsManager.getListButton().getWidth(),settingsManager.getListButton().getHeight()*settingsManager.getListButton().getScaleY(), Assets.listButton);
+        batcher.endBatch();
+
+        if(settingsManager.getSideBet1Arrow().getRotation()!=0) {
+            batcher.beginBatch(Assets.buttons);
+            batcher.drawSprite(settingsManager.getSideBet1Arrow(),settingsManager.getSideBet1Arrow().getRotation(),settingsManager.getSideBet1Arrow().getTextureRegion());
+            batcher.endBatch();
+        }
+        batcher.beginBatch(Assets.buttons);
+        batcher.drawSprite(settingsManager.getSideBet2Arrow(),settingsManager.getSideBet2Arrow().getRotation(),settingsManager.getSideBet2Arrow().getTextureRegion());
+        batcher.endBatch();
+
     }
 
     private void renderToggleWithColor(Texture t,Toggle toggle) {
@@ -888,19 +907,18 @@ public class GameRenderer implements Serializable{
         batcher.endBatch();
 
 
-        if(state==2) {
+        if(state==2 && gameManager.getOldSideBetLeft()!=null) {
             gameManager.getOldSideBetLeft().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetLeft().getPayout(),gameManager.getOldSideBetLeft().getVersion(),gameManager.getOldSideBetLeft().getPosition());
         }
-        else
+        else if(gameManager.getSideBetLeft()!=null)
             gameManager.getSideBetLeft().drawPayouts(batcher,glGraphics,gameManager.getSideBetLeft().getPayout(),gameManager.getSideBetLeft().getVersion(),gameManager.getSideBetLeft().getPosition());
 
 
-        if(state==2) {
+        if(state==2 && gameManager.getOldSideBetRight()!=null) {
             gameManager.getOldSideBetRight().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetRight().getPayout(),gameManager.getOldSideBetRight().getVersion(),gameManager.getOldSideBetRight().getPosition());
         }
-        else
+        else if(gameManager.getSideBetRight()!=null)
             gameManager.getSideBetRight().drawPayouts(batcher,glGraphics,gameManager.getSideBetRight().getPayout(),gameManager.getSideBetRight().getVersion(),gameManager.getSideBetRight().getPosition());
-
 
         glGraphics.getGl().glColor4f(1,1,1,1);
     }

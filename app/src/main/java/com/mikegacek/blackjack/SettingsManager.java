@@ -13,6 +13,7 @@ public class SettingsManager implements Serializable{
     private Slider deckPenetration;
     private Toggle CSMToggle,insuranceToggle,surrenderToggle,resplitAcesToggle,hitSplitAcesToggle,doubleSplitAcesToggle,doubleAfterSplitToggle;
     private Button deck1,deck2,deck3,deck4,deck5,deck6,deck7,deck8,blackjackPays32,blackjackPays75,blackjackPays65,blackjackPays11,dealerStand,dealerHit,split2,split3,split4,doubleAny2,double911,double1011,exitSettings;
+    private Button listButton,sideBet1Arrow,sideBet2Arrow;
 
     private int decks,penetration,dealer,split,doubleDown,sound;
     private double blackjackPays;
@@ -23,6 +24,8 @@ public class SettingsManager implements Serializable{
     private boolean csmTemp,insuranceTemp,surrenderTemp,resplitTemp,hitAcesTemp,doubleAcesTemp,dasTemp,perfectPairsTemp,twentyOneV1Temp,twentyOneV2Temp;
 
     private boolean newDeck,changeSideBets;
+    //list location 0=off 1= side bet 1 2= side bet 2
+    private int listLocation;
 
     public SettingsManager() {
         //Add buttons,toggles and slider here
@@ -94,6 +97,11 @@ public class SettingsManager implements Serializable{
 
         newDeck=false;
         changeSideBets=false;
+
+        listLocation=0;
+        listButton = new Button(317,458,817,471,Assets.listButton);
+        sideBet1Arrow= new Button(35,35,943,262,Assets.settingsOrangeArrow);
+        sideBet2Arrow= new Button(35,35,943,168,Assets.settingsOrangeArrow);
     }
 
     public Slider getDeckPenetration() {
@@ -208,6 +216,32 @@ public class SettingsManager implements Serializable{
 
     public Button getExitSettings() {
         return exitSettings;
+    }
+
+    public Button getSideBet1Arrow() {
+        return sideBet1Arrow;
+    }
+
+    public Button getSideBet2Arrow() {
+        return sideBet2Arrow;
+    }
+
+    public Button getListButton() {
+        return listButton;
+    }
+
+    public int getListLocation() {
+        return listLocation;
+    }
+
+    public void setListLocation(int listLocation) {
+        if(listLocation==1) {
+            listButton.setPos(817,471);
+        }
+        else if(listLocation==2) {
+            listButton.setPos(817,377);
+        }
+        this.listLocation=listLocation;
     }
 
     public boolean getCSM() {
@@ -529,6 +563,8 @@ public class SettingsManager implements Serializable{
         checkButton(doubleAny2);
         checkButton(double911);
         checkButton(double1011);
+        listButton.setScaleY(0);
+        listLocation=0;
 
     }
 

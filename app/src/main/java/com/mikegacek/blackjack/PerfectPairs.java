@@ -1,5 +1,7 @@
 package com.mikegacek.blackjack;
 
+import android.util.Log;
+
 import com.mikegacek.blackjack.framework.gl.SpriteBatcher;
 import com.mikegacek.blackjack.framework.gl.TextureRegion;
 import com.mikegacek.blackjack.framework.impl.GLGraphics;
@@ -17,11 +19,11 @@ public class PerfectPairs implements SideBets,Serializable {
     private int payout,bet,position;
     private transient ArrayList<TextureRegion> payouts;
 
-    public PerfectPairs(int version) {
+    public PerfectPairs(int version,int p) {
         this.version=version;
         payout=-1;
         bet=0;
-        position=0;
+        position=p;
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
     }
@@ -53,7 +55,7 @@ public class PerfectPairs implements SideBets,Serializable {
 
     @Override
     public int getPosition() {
-        return 0;
+        return position;
     }
 
     public void setPayout(int payout) {
@@ -125,7 +127,6 @@ public class PerfectPairs implements SideBets,Serializable {
             textOffset=892;
             circleOffset=776;
         }
-
         createPayoutTextures(v);
         //Draw 3 rows
         //Row 1 PerfectPair

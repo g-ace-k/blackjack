@@ -131,6 +131,8 @@ public class Assets implements Serializable{
     public static TextureRegion settingsExitButton;
     public static TextureRegion settingsOrangeArrow;
 
+    public static TextureRegion listButton;
+
     public static TextureRegion settingsBack;
     public static TextureRegion settingsFore;
 
@@ -239,6 +241,7 @@ public class Assets implements Serializable{
         settingsSliderCircle = new TextureRegion(buttons,486,1524,69,69);
         settingsExitButton = new TextureRegion(buttons,555,1485,608,115);
         settingsOrangeArrow = new TextureRegion(buttons,451,1524,35,35);
+        listButton = new TextureRegion(buttons,883,0,317,468);
 
         settingsBackground= new Texture(game,"settingsBackground.png");
         settingsForeground= new Texture(game,"settingsForeground.png");

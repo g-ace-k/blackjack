@@ -103,14 +103,14 @@ public class GameManager  implements Serializable{
         }
 
         if(decks>1)
-            sideBetLeft= new PerfectPairs(1);
+            sideBetLeft= new PerfectPairs(1,0);
         else
             sideBetLeft=null;
 
         if(decks>2)
-            sideBetRight= new TwentyOnePlusThree(2);
+            sideBetRight= new TwentyOnePlusThree(2,1);
         else
-            sideBetRight = new TwentyOnePlusThree(1);
+            sideBetRight = new TwentyOnePlusThree(1,1);
 
     }
 

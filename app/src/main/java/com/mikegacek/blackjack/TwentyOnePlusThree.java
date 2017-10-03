@@ -19,11 +19,11 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
 
 
     //Two version: version 1 is with 2 or less decks, version 2 is 3 or more decks
-    public TwentyOnePlusThree(int version) {
+    public TwentyOnePlusThree(int version,int position) {
         this.version=version;
         payout=-1;
         bet=0;
-        position=1;
+        this.position=position;
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
     }
