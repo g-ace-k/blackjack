@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
+
 import com.mikegacek.blackjack.framework.Game;
 import com.mikegacek.blackjack.framework.Input.TouchEvent;
 import com.mikegacek.blackjack.framework.gl.Camera2D;
@@ -21,10 +22,6 @@ import com.mikegacek.blackjack.framework.math.Vector2;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -39,6 +36,7 @@ public class MainScreen extends GLScreen {
     static final int GAME_MENU = 3;
     static final int GAME_SLOTMACHINE = 4;
     static final int GAME_SETTINGS = 5;
+    static final int GAME_STATISTICS = 6;
 
     static int sound=1;
 
@@ -60,12 +58,7 @@ public class MainScreen extends GLScreen {
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
-    //Test
-
-    int test;
-    float r;
-    float g;
-    float b;
+    double earnChipsTimer;
 
     public MainScreen(Game game) {
         super(game);
@@ -76,25 +69,19 @@ public class MainScreen extends GLScreen {
         touchPoint = new Vector2();
         random = new Random();
 
-
-        //Test
-        test =0;
-        r=1f;
-        g=.416f;
-        b=0;
-
-        //loadData();
-
         sharedPreferences = glGame.getSharedPreferences("com.blackjack",Context.MODE_PRIVATE);
         editor=sharedPreferences.edit();
         state=sharedPreferences.getInt("com.blackjack.state",GAME_BETTING);
+
+        earnChipsTimer=sharedPreferences.getLong("com.blackjack.earnChipsTimer",-600);
+
+        loadData();
 
         if(sharedPreferences.getBoolean("adFinished",true)==false) {
             state=GAME_BETTING;
         }
 
-
-        if(state==GAME_SETTINGS) {
+        if(state==GAME_SETTINGS || state==GAME_MENU || state==GAME_STATISTICS) {
             editor.putInt("disableBack",1);
             editor.commit();
         }
@@ -103,7 +90,7 @@ public class MainScreen extends GLScreen {
             editor.commit();
         }
         //No load
-        if(chipManager==null || settingsManager==null || gameManager==null || slotMachine==null || gameRenderer==null) {
+        if(chipManager==null || statisticsManager==null || settingsManager==null || gameManager==null || slotMachine==null || gameRenderer==null) {
             state=GAME_BETTING;
             editor.putInt("com.blackjack.state",state);
             editor.commit();
@@ -113,10 +100,12 @@ public class MainScreen extends GLScreen {
             statisticsManager = new StatisticsManager();
             gameManager = new GameManager(decks, chipManager, settingsManager,statisticsManager);
             slotMachine = new SlotMachine(glGraphics, batcher, chipManager);
-            gameRenderer = new GameRenderer(glGraphics, batcher, gameManager, chipManager, slotMachine, settingsManager);
+            gameRenderer = new GameRenderer(glGraphics, batcher, gameManager, chipManager, slotMachine, settingsManager,statisticsManager);
             gameManager.shuffle();
             chipManager.setMoney(sharedPreferences.getInt("com.blackjack.money",500));
         }
+
+        saveData();
 
     }
     @Override
@@ -150,6 +139,9 @@ public class MainScreen extends GLScreen {
             case GAME_SETTINGS:
                 updateSettings(deltaTime);
                 break;
+            case GAME_STATISTICS:
+                updateStatistics(deltaTime);
+                break;
         }
 
     }
@@ -181,7 +173,7 @@ public class MainScreen extends GLScreen {
                     slotMachine.reset();
                     waitTime = 180;
                     state = GAME_SLOTMACHINE;
-                   //glGame.startActivity(new Intent(glGame,SlotMachineAd.class));
+                    glGame.startActivity(new Intent(glGame,SlotMachineAd.class));
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getChip1(),touchPoint) && chipManager.getTotalMoney()!=0) {
                     Assets.button.play(sound);
@@ -289,8 +281,8 @@ public class MainScreen extends GLScreen {
                     chipManager.setDirection(chipManager.getDirection()*-1);
                 }
                 else if(OverlapTester.pointInRectangle(chipManager.getRepeat(),touchPoint) && chipManager.getTotalMoney()!=0) {
-                    if(chipManager.repeatTotal()<=chipManager.getMoney()) {
-                        chipManager.repeatBet();
+                    if(chipManager.repeatTotal(gameManager.getSideBetLeft().getVersion(),gameManager.getSideBetRight().getVersion())<=chipManager.getMoney()) {
+                        chipManager.repeatBet(gameManager.getSideBetLeft().getVersion(),gameManager.getSideBetRight().getVersion());
                         if(gameManager.getSideBetLeft().getVersion()==0)
                             chipManager.removeAllChipsFromSelection(1);
                         if(gameManager.getSideBetRight().getVersion()==0)
@@ -314,6 +306,8 @@ public class MainScreen extends GLScreen {
                     Assets.button.play(sound);
                     state=GAME_MENU;
                     editor.putInt("com.blackjack.state",state);
+                    editor.commit();
+                    editor.putInt("disableBack",1);
                     editor.commit();
                     gameManager.pullMenu();
                 }
@@ -375,8 +369,6 @@ public class MainScreen extends GLScreen {
             editor.putInt("com.blackjack.state",state);
             editor.commit();
             gameManager.cardsToDiscard();
-            gameManager.setOldSideBetLeft(gameManager.getSideBetLeft());
-            gameManager.setOldSideBetRight(gameManager.getSideBetRight());
             gameManager.getSideBetLeft().resetPayout();
             gameManager.getSideBetRight().resetPayout();
             waitTime=180;
@@ -551,6 +543,8 @@ public class MainScreen extends GLScreen {
                     state=GAME_BETTING;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
+                    editor.putInt("disableBack",0);
+                    editor.commit();
                     gameManager.pushMenu();
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.settings,touchPoint)) {
@@ -559,8 +553,17 @@ public class MainScreen extends GLScreen {
                     state=GAME_SETTINGS;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
-                    settingsManager.loadSettings();
+                    settingsManager.loadSettings(gameManager.getSideBetLeft(),gameManager.getSideBetRight());
                     settingsManager.enterSettingsCheck();
+                    editor.putInt("disableBack",1);
+                    editor.commit();
+                }
+                else if(OverlapTester.pointInRectangle(gameManager.statistics,touchPoint)) {
+                    Assets.button.play(sound);
+                    gameManager.pushMenu();
+                    state=GAME_STATISTICS;
+                    editor.putInt("com.blackjack.state",state);
+                    editor.commit();
                     editor.putInt("disableBack",1);
                     editor.commit();
                 }
@@ -582,7 +585,52 @@ public class MainScreen extends GLScreen {
                     gameManager.cardsToDiscard();
                     slotMachine.reset();
                     waitTime=180;
-                    //glGame.startActivity(new Intent(glGame,SlotMachineAd.class));
+                    glGame.startActivity(new Intent(glGame,SlotMachineAd.class));
+                }
+                else if(OverlapTester.pointInRectangle(gameManager.earnChips,touchPoint)) {
+                    Assets.button.play(sound);
+
+                    if((SystemClock.elapsedRealtime()/1000-earnChipsTimer)>600) {
+                        glGame.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                    new AlertDialog.Builder(glGame)
+                                            .setTitle("Watch this video ad for 5000 chips?")
+                                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    positiveButtonPress();
+                                                }
+                                            })
+                                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    negativeButtonPress();
+                                                }
+                                            })
+                                            .show();
+
+                            }
+
+                            public void positiveButtonPress() {
+                                earnChipsTimer = SystemClock.elapsedRealtime() / 1000;
+                                editor.putLong("com.blackjack.earnChipsTimer",(long)earnChipsTimer);
+                                glGame.startActivity(new Intent(glGame,EarnChipsAd.class));
+                            }
+
+                            public void negativeButtonPress() {
+
+                            }
+                        });
+                    }
+                    else {
+                        glGame.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(glGame,"You must wait before being able to earn more chips.",Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.sound,touchPoint)) {
                     //change to if settings sound is on or off
@@ -599,15 +647,19 @@ public class MainScreen extends GLScreen {
                     }
                 }else if(OverlapTester.pointInRectangle(gameManager.tableGreen,touchPoint)) {
                     gameRenderer.changeBackground(Assets.greenBackground,Assets.green);
+                    gameRenderer.setBackgroundId(1);
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.tableBlue,touchPoint)) {
                     gameRenderer.changeBackground(Assets.blueBackground,Assets.blue);
+                    gameRenderer.setBackgroundId(2);
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.tableRed,touchPoint)) {
                     gameRenderer.changeBackground(Assets.redBackground,Assets.red);
+                    gameRenderer.setBackgroundId(3);
                 }
                 else if(OverlapTester.pointInRectangle(gameManager.tablePurple,touchPoint)) {
                     gameRenderer.changeBackground(Assets.purpleBackground,Assets.purple);
+                    gameRenderer.setBackgroundId(4);
                 }
             }
         }
@@ -629,7 +681,7 @@ public class MainScreen extends GLScreen {
             slotMachine.setSlotArmHeight(touchPoint.y);
 
             if(event.type==TouchEvent.TOUCH_DOWN) {
-                if(OverlapTester.pointInCircle(slotMachine.getSlotMachineHandle(),touchPoint) && touchPoint.y>428 && touchPoint.y<772) {
+                if(OverlapTester.pointInCircle(slotMachine.getSlotMachineHandle(),touchPoint) && touchPoint.y>856 && touchPoint.y<1544) {
                     slotMachine.setTouched(true);
                 }
             }
@@ -653,20 +705,7 @@ public class MainScreen extends GLScreen {
             touchPoint.set(event.x,event.y);
             guiCam.touchToWorld(touchPoint);
             if(event.type==TouchEvent.TOUCH_DRAGGED || event.type==TouchEvent.TOUCH_DOWN) {
-                /*if(settingsManager.getPage()==1) {
-                    settingsManager.getDeckLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getDeckLeft(), touchPoint));
-                    settingsManager.getDeckRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getDeckRight(), touchPoint));
-                    settingsManager.getPenLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getPenLeft(), touchPoint));
-                    settingsManager.getPenRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getPenRight(), touchPoint));
-                }
-                else if(settingsManager.getPage()==2) {
-                    settingsManager.getBlackjackLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getBlackjackLeft(),touchPoint));
-                    settingsManager.getBlackjackRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getBlackjackRight(),touchPoint));
-                    settingsManager.getSplitLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getSplitLeft(),touchPoint));
-                    settingsManager.getSplitRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getSplitRight(),touchPoint));
-                    settingsManager.getDoubleLeft().setPressed(OverlapTester.pointInRectangle(settingsManager.getDoubleLeft(),touchPoint));
-                    settingsManager.getDoubleRight().setPressed(OverlapTester.pointInRectangle(settingsManager.getDoubleRight(),touchPoint));
-                }*/
+                settingsManager.getExitSettings().setPressed(OverlapTester.pointInRectangle(settingsManager.getExitSettings(),touchPoint));
 
                 if(OverlapTester.pointInRectangle(settingsManager.getDeckPenetration(),touchPoint)) {
                     if(touchPoint.x<=settingsManager.getDeckPenetration().getBarXStart()) {
@@ -686,23 +725,10 @@ public class MainScreen extends GLScreen {
 
 
             if(event.type==TouchEvent.TOUCH_UP) {
-                /*
-                if(settingsManager.getPage()==1) {
-                    settingsManager.getDeckLeft().setPressed(false);
-                    settingsManager.getDeckRight().setPressed(false);
-                    settingsManager.getPenLeft().setPressed(false);
-                    settingsManager.getPenRight().setPressed(false);
-                }
-                else if(settingsManager.getPage()==2) {
-                    settingsManager.getBlackjackLeft().setPressed(false);
-                    settingsManager.getBlackjackRight().setPressed(false);
-                    settingsManager.getSplitLeft().setPressed(false);
-                    settingsManager.getSplitRight().setPressed(false);
-                    settingsManager.getDoubleLeft().setPressed(false);
-                    settingsManager.getDoubleRight().setPressed(false);
-                }*/
+                settingsManager.getExitSettings().setPressed(false);
                 if(settingsManager.getListLocation()!=0) {
                     if(OverlapTester.pointInRectangle(settingsManager.getListButton(),touchPoint) && settingsManager.getListLocation()==1) {
+                        Assets.button.play(sound);
                         if(touchPoint.y>(settingsManager.getListButton().getYPos()+120)) {
                             //Pressed Perfect Pairs
                             if(settingsManager.getDecks()<2) {
@@ -785,6 +811,7 @@ public class MainScreen extends GLScreen {
                         t.start();
                     }
                     else if(OverlapTester.pointInRectangle(settingsManager.getListButton(),touchPoint) && settingsManager.getListLocation()==2) {
+                        Assets.button.play(sound);
                         if(touchPoint.y>(settingsManager.getListButton().getYPos()+120)) {
                             //Pressed Perfect Pairs
                             if(settingsManager.getDecks()<2) {
@@ -866,46 +893,71 @@ public class MainScreen extends GLScreen {
                     }
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck1(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(1);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck1(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck2(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(2);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck2(),settingsManager.getDeck1(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck3(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(3);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck3(),settingsManager.getDeck2(),settingsManager.getDeck1(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck4(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(4);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck4(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck1(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck5(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(5);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck5(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck1(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck6(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(6);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck6(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck1(),settingsManager.getDeck7(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck7(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(7);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck7(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck1(),settingsManager.getDeck8());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDeck8(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDecks(8);
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetLeft());
+                    gameManager.checkSideBetDeckRestriction(gameManager.getSideBetRight());
                     //thread to change color here
                     pressSettingButton(settingsManager.getDeck8(),settingsManager.getDeck2(),settingsManager.getDeck3(),settingsManager.getDeck4(),settingsManager.getDeck5(),settingsManager.getDeck6(),settingsManager.getDeck7(),settingsManager.getDeck1());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getCSMToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setCsm(!settingsManager.getCSM());
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getCSMToggle());
@@ -925,66 +977,79 @@ public class MainScreen extends GLScreen {
 
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays32(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setBlackjackPays(1.5);
                     //thread to change color here
                     pressSettingButton(settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays11());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays75(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setBlackjackPays(1.4);
                     //thread to change color here
                     pressSettingButton(settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays11());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays65(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setBlackjackPays(1.2);
                     //thread to change color here
                     pressSettingButton(settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays32(),settingsManager.getBlackjackPays11());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getBlackjackPays11(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setBlackjackPays(1);
                     //thread to change color here
                     pressSettingButton(settingsManager.getBlackjackPays11(),settingsManager.getBlackjackPays75(),settingsManager.getBlackjackPays65(),settingsManager.getBlackjackPays32());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getInsuranceToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setInsurance(!settingsManager.getInsurance());
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getInsuranceToggle());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSurrenderToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setSurrender(!settingsManager.getSurrender());
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getSurrenderToggle());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDealerStand(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDealer(1);
                     //thread to change color here
                     pressSettingButton(settingsManager.getDealerStand(),settingsManager.getDealerHit());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDealerHit(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDealer(-1);
                     //thread to change color here
                     pressSettingButton(settingsManager.getDealerHit(),settingsManager.getDealerStand());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSplit2(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setSplit(2);
                     //thread to change color here
                     pressSettingButton(settingsManager.getSplit2(),settingsManager.getSplit3(),settingsManager.getSplit4());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSplit3(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setSplit(3);
                     //thread to change color here
                     pressSettingButton(settingsManager.getSplit3(),settingsManager.getSplit2(),settingsManager.getSplit4());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSplit4(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setSplit(4);
                     //thread to change color here
                     pressSettingButton(settingsManager.getSplit4(),settingsManager.getSplit3(),settingsManager.getSplit2());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getResplitAcesToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setResplit(!settingsManager.getResplit());
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getResplitAcesToggle());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getHitSplitAcesToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setHitAces(!settingsManager.getHitAces());
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getHitSplitAcesToggle());
@@ -998,13 +1063,14 @@ public class MainScreen extends GLScreen {
                         });
                     }
                     else {
+                        Assets.button.play(sound);
                         settingsManager.setDoubleAces(!settingsManager.getDoubleAces());
                         //thread to toggle color change and move toggle circle
                         pressToggle(settingsManager.getDoubleSplitAcesToggle());
                     }
-                    Log.d("DOUBLEACES","DOUBLE ACES is " + settingsManager.getDoubleAces());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDoubleAfterSplitToggle(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDas(!settingsManager.getDas());
                     if(settingsManager.getDas()==false && settingsManager.getDoubleAces()==true) {
                         settingsManager.setDoubleAces(false);
@@ -1013,21 +1079,24 @@ public class MainScreen extends GLScreen {
                     }
                     //thread to toggle color change and move toggle circle
                     pressToggle(settingsManager.getDoubleAfterSplitToggle());
-                    Log.d("DOUBLEACES","DOUBLE ACES is " + settingsManager.getDoubleAces());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDoubleAny2(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDoubleDown(1);
                     pressSettingButton(settingsManager.getDoubleAny2(),settingsManager.getDouble911(),settingsManager.getDouble1011());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDouble911(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDoubleDown(2);
                     pressSettingButton(settingsManager.getDouble911(),settingsManager.getDoubleAny2(),settingsManager.getDouble1011());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getDouble1011(),touchPoint)) {
+                    Assets.button.play(sound);
                     settingsManager.setDoubleDown(3);
                     pressSettingButton(settingsManager.getDouble1011(),settingsManager.getDouble911(),settingsManager.getDoubleAny2());
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSideBet1Arrow(),touchPoint)) {
+                    Assets.button.play(sound);
                     //scale list from 0 to 1, rotate arrow 180
                     settingsManager.setListLocation(1);
                     Thread t = new Thread(new Runnable() {
@@ -1078,6 +1147,7 @@ public class MainScreen extends GLScreen {
                     t.start();
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getSideBet2Arrow(),touchPoint)) {
+                    Assets.button.play(sound);
                     //scale list from 0 to 1, rotate arrow 180
                     settingsManager.setListLocation(2);
                     Thread t = new Thread(new Runnable() {
@@ -1128,12 +1198,13 @@ public class MainScreen extends GLScreen {
                     t.start();
                 }
                 else if(OverlapTester.pointInRectangle(settingsManager.getExitSettings(),touchPoint)) {
+                    Assets.button.play(sound);
 
                     editor.putInt("disableBack",1);
                     editor.commit();
                     glGame.runOnUiThread(new Runnable(){
                         public void run() {
-                            if(!settingsManager.wereSettingsChanged()) {
+                            if(!settingsManager.wereSettingsChanged(gameManager.getSideBetLeft(),gameManager.getSideBetRight())) {
                                 negativeButtonPress();
                             }
                             else if(settingsManager.isDeckShuffleNeeded()) {
@@ -1152,6 +1223,7 @@ public class MainScreen extends GLScreen {
                                             }
                                         })
                                         .show();
+                                //shuffle deck here
                             }
                             else {
                                 new AlertDialog.Builder(glGame)
@@ -1172,7 +1244,12 @@ public class MainScreen extends GLScreen {
                         }
 
                         public void positiveButtonPress() {
-                            settingsManager.setChangeSideBets(true);
+                            if(gameManager.getSideBetLeft().getId()!=settingsManager.getSideBetLeftIdTemp() || gameManager.getSideBetLeft().getVersion()!=settingsManager.getSideBetLeftVersionTemp() || gameManager.getSideBetLeft().getVersion()==0) {
+                                chipManager.removeAllChipsFromSelection(1);
+                            }
+                            if(gameManager.getSideBetRight().getId()!=settingsManager.getSideBetRightIdTemp() || gameManager.getSideBetRight().getVersion()!=settingsManager.getSideBetRightVersionTemp() || gameManager.getSideBetRight().getVersion()==0) {
+                                chipManager.removeAllChipsFromSelection(2);
+                            }
                             //change tableSettingsTextures
                             if(settingsManager.getBlackjackPays()==1.5)
                                 Assets.blackjackPayout.changeValues(0,0,817,54);
@@ -1197,6 +1274,8 @@ public class MainScreen extends GLScreen {
 
                         public void negativeButtonPress() {
                             settingsManager.revertSettings();
+                            gameManager.changeSideBet(gameManager.getSideBetLeft(),settingsManager.getSideBetLeftIdTemp(),settingsManager.getSideBetLeftVersionTemp(),0);
+                            gameManager.changeSideBet(gameManager.getSideBetRight(),settingsManager.getSideBetRightIdTemp(),settingsManager.getSideBetRightVersionTemp(),1);
                             state=GAME_BETTING;
                             editor.putInt("com.blackjack.state",state);
                             editor.commit();
@@ -1209,54 +1288,64 @@ public class MainScreen extends GLScreen {
 
 
                 }
-                /*
-                else if(OverlapTester.pointInRectangle(settingsManager.getResetStats(),touchPoint)) {
-                    glGame.runOnUiThread(new Runnable(){
-                        public void run() {
-                            new AlertDialog.Builder(glGame)
-                                        .setTitle("All statistics will be permanently reset")
-                                        .setMessage("Are you sure you want to continue?")
-                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                settingsManager.resetStats();
-                                            }
-                                        })
-                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                            }
-                                        })
-                                        .show();
-                            }
-                    });
-                }
-                */
-                    /*if(OverlapTester.pointInRectangle(settingsManager.getPerfectPairsButton(),touchPoint)) {
-                        if(settingsManager.getDecks()<2) {
-                            glGame.runOnUiThread(new Runnable(){
-                                public void run() {
-                                    Toast.makeText(glGame,"Not enough decks to play this side bet.",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                        settingsManager.setPerfectPairs(!settingsManager.getPerfectPairs());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getTwentyOneV1Button(),touchPoint)) {
-                        settingsManager.setTwentyOneV1(!settingsManager.getTwentyOneV1());
-                    }
-                    else if(OverlapTester.pointInRectangle(settingsManager.getTwentyOneV2Button(),touchPoint)) {
-                        if(settingsManager.getDecks()<3) {
-                            glGame.runOnUiThread(new Runnable(){
-                                public void run() {
-                                    Toast.makeText(glGame,"Not enough decks to play this side bet.",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                        settingsManager.setTwentyOneV2(!settingsManager.getTwentyOneV2());
-                    }*/
             }
 
         }
 
+    }
+
+    public void updateStatistics(float deltaTime) {
+        List<TouchEvent> touchEvents = game.getInput().getTouchEvents();
+        game.getInput().getKeyEvents();
+        int len= touchEvents.size();
+
+        gameManager.updateFinishedPlayer();
+        for(int i=0;i<len;i++) {
+            TouchEvent event = touchEvents.get(i);
+            touchPoint.set(event.x, event.y);
+            guiCam.touchToWorld(touchPoint);
+            if(event.type==TouchEvent.TOUCH_DRAGGED || event.type==TouchEvent.TOUCH_DOWN) {
+                statisticsManager.getExitButton().setPressed(OverlapTester.pointInRectangle(statisticsManager.getExitButton(),touchPoint));
+                statisticsManager.getResetButton().setPressed(OverlapTester.pointInRectangle(statisticsManager.getResetButton(),touchPoint));
+
+
+            }
+            if(event.type==TouchEvent.TOUCH_UP) {
+                statisticsManager.getExitButton().setPressed(false);
+                statisticsManager.getResetButton().setPressed(false);
+
+                if(OverlapTester.pointInRectangle(statisticsManager.getExitButton(),touchPoint)) {
+                    Assets.button.play(sound);
+                    state=GAME_BETTING;
+                    editor.putInt("com.blackjack.state",state);
+                    editor.commit();
+                    editor.putInt("disableBack",0);
+                    editor.commit();
+                }
+                else if(OverlapTester.pointInRectangle(statisticsManager.getResetButton(),touchPoint)) {
+                    Assets.button.play(sound);
+                    glGame.runOnUiThread(new Runnable(){
+                        public void run() {
+                            new AlertDialog.Builder(glGame)
+                                    .setTitle("All statistics will be permanently reset")
+                                    .setMessage("Are you sure you want to continue?")
+                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            statisticsManager.resetStats();
+                                        }
+                                    })
+                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                        }
+                                    })
+                                    .show();
+                        }
+                    });
+                }
+
+            }
+
+        }
     }
 
 
@@ -1274,26 +1363,6 @@ public class MainScreen extends GLScreen {
             settingsManager.setNewDeck(false);
 
             gameManager.newDeck();
-        }
-        if(settingsManager.getChangeSideBets()==true) {
-            settingsManager.checkSideBets();
-            if(settingsManager.getPerfectPairs()==true)
-                gameManager.getSideBetLeft().setVersion(1);
-            else {
-                gameManager.getSideBetLeft().setVersion(0);
-                chipManager.removeAllChipsFromSelection(1);
-            }
-
-            if(settingsManager.getTwentyOneV1()==true)
-                gameManager.getSideBetRight().setVersion(1);
-            else if(settingsManager.getTwentyOneV2()==true)
-                gameManager.getSideBetRight().setVersion(2);
-            else {
-                gameManager.getSideBetRight().setVersion(0);
-                chipManager.removeAllChipsFromSelection(2);
-            }
-
-            settingsManager.setChangeSideBets(false);
         }
 
         gameRenderer.render(state);
@@ -1318,6 +1387,9 @@ public class MainScreen extends GLScreen {
             case GAME_SETTINGS:
                 presentSettings(deltaTime);
                 break;
+            case GAME_STATISTICS:
+                presentStatistics(deltaTime);
+                break;
         }
 
         //Test for background
@@ -1338,6 +1410,22 @@ public class MainScreen extends GLScreen {
     }
 
     public void presentMenu(float deltaTime) {
+
+        gameRenderer.renderEarnChipsTimer(earnChipsTimer);
+        if(sharedPreferences.getInt("disableBack",0)==2) {
+            state=GAME_BETTING;
+            gameManager.pushMenu();
+            editor.putInt("com.blackjack.state",state);
+            editor.commit();
+            editor.putInt("disableBack",0);
+            editor.commit();
+        }
+
+        if(sharedPreferences.getBoolean("com.blackjack.reward",false)) {
+            chipManager.setMoney(sharedPreferences.getInt("com.blackjack.money", 500));
+            editor.putBoolean("com.blackjack.reward",false);
+            editor.commit();
+        }
 
     }
 
@@ -1362,7 +1450,7 @@ public class MainScreen extends GLScreen {
 
             glGame.runOnUiThread(new Runnable(){
                 public void run() {
-                    if(!settingsManager.wereSettingsChanged()) {
+                    if(!settingsManager.wereSettingsChanged(gameManager.getSideBetLeft(),gameManager.getSideBetRight())) {
                         negativeButtonPress();
                     }
                     else if(settingsManager.isDeckShuffleNeeded()) {
@@ -1402,7 +1490,12 @@ public class MainScreen extends GLScreen {
                 }
 
                 public void positiveButtonPress() {
-                    settingsManager.setChangeSideBets(true);
+                    if(gameManager.getSideBetLeft().getId()!=settingsManager.getSideBetLeftIdTemp() || gameManager.getSideBetLeft().getVersion()!=settingsManager.getSideBetLeftVersionTemp() || gameManager.getSideBetLeft().getVersion()==0) {
+                        chipManager.removeAllChipsFromSelection(1);
+                    }
+                    if(gameManager.getSideBetRight().getId()!=settingsManager.getSideBetRightIdTemp() || gameManager.getSideBetRight().getVersion()!=settingsManager.getSideBetRightVersionTemp() || gameManager.getSideBetRight().getVersion()==0) {
+                        chipManager.removeAllChipsFromSelection(2);
+                    }
                     //change tableSettingsTextures
                     if(settingsManager.getBlackjackPays()==1.5)
                         Assets.blackjackPayout.changeValues(0,0,817,54);
@@ -1427,6 +1520,8 @@ public class MainScreen extends GLScreen {
 
                 public void negativeButtonPress() {
                     settingsManager.revertSettings();
+                    gameManager.changeSideBet(gameManager.getSideBetLeft(),settingsManager.getSideBetLeftIdTemp(),settingsManager.getSideBetLeftVersionTemp(),0);
+                    gameManager.changeSideBet(gameManager.getSideBetRight(),settingsManager.getSideBetRightIdTemp(),settingsManager.getSideBetRightVersionTemp(),1);
                     state=GAME_BETTING;
                     editor.putInt("com.blackjack.state",state);
                     editor.commit();
@@ -1440,10 +1535,20 @@ public class MainScreen extends GLScreen {
         }
     }
 
+    public void presentStatistics(float deltaTime) {
+        if(sharedPreferences.getInt("disableBack",0)==2) {
+            state=GAME_BETTING;
+            editor.putInt("com.blackjack.state",state);
+            editor.commit();
+            editor.putInt("disableBack",0);
+            editor.commit();
+        }
+    }
+
 
     @Override
     public void resume() {
-        //loadData();
+        loadData();
     }
 
     @Override
@@ -1619,6 +1724,7 @@ public class MainScreen extends GLScreen {
 
     public void saveData() {
         SerializableManager.save(glGame,chipManager,"com.blackjack.chipManager");
+        SerializableManager.save(glGame,statisticsManager,"com.blackjack.statisticsManager");
         SerializableManager.save(glGame,settingsManager,"com.blackjack.settingsManager");
         SerializableManager.save(glGame,gameManager,"com.blackjack.gameManager");
         SerializableManager.save(glGame,slotMachine,"com.blackjack.slotMachine");
@@ -1631,6 +1737,7 @@ public class MainScreen extends GLScreen {
 
     public void loadData() {
         chipManager=SerializableManager.load(glGame,"com.blackjack.chipManager");
+        statisticsManager=SerializableManager.load(glGame,"com.blackjack.statisticsManager");
         settingsManager=SerializableManager.load(glGame,"com.blackjack.settingsManager");
         gameManager=SerializableManager.load(glGame,"com.blackjack.gameManager");
         slotMachine=SerializableManager.load(glGame,"com.blackjack.slotMachine");
@@ -1638,14 +1745,19 @@ public class MainScreen extends GLScreen {
 
         Assets.reloadSound(glGame);
 
-        if(chipManager!=null && settingsManager!=null && gameManager!=null && slotMachine!=null && gameRenderer!=null) {
+        if(chipManager!=null && statisticsManager!=null && settingsManager!=null && gameManager!=null && slotMachine!=null && gameRenderer!=null) {
             chipManager.loadData();
             settingsManager.loadData();
+            statisticsManager.loadData();
             gameManager.loadData(chipManager, settingsManager,statisticsManager);
             slotMachine.loadData(glGraphics, batcher, chipManager);
-            gameRenderer.loadData(batcher, glGraphics, gameManager, chipManager, slotMachine, settingsManager, guiCam);
+            gameRenderer.loadData(batcher, glGraphics, gameManager, chipManager, slotMachine, settingsManager,statisticsManager, guiCam);
 
             sound=settingsManager.getSound();
+
+            if(sharedPreferences.getInt("com.blackjack.state",GAME_BETTING)!=GAME_MENU)
+                gameManager.pushMenu();
+
         }
     }
 
