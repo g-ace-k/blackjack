@@ -14,7 +14,9 @@ import java.util.ArrayList;
 public class TwentyOnePlusThree implements SideBets,Serializable{
 
     private int version;
+    private final int id=2;
     private int payout,bet,position;
+    private String name;
     private transient ArrayList<TextureRegion> payouts;
 
 
@@ -23,6 +25,7 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         this.version=version;
         payout=-1;
         bet=0;
+        updateName();
         this.position=position;
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
@@ -34,6 +37,7 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
 
     public void setVersion(int version) {
         this.version = version;
+        updateName();
     }
 
     public int getPayout() {
@@ -44,9 +48,31 @@ public class TwentyOnePlusThree implements SideBets,Serializable{
         this.payout = payout;
     }
 
+    public int getBet() { return bet;}
+
+    public void setBet(int b) { bet=b;}
+
     public int getPosition() { return position;}
 
     public void setPosition(int position) { this.position=position;}
+
+    public String getName() {
+        return name;
+    }
+
+    public void updateName() {
+        if(version==0) {
+            name="None";
+        }
+        else if(version==1) {
+            name="21+3(1-8 decks)";
+        }
+        else if(version==2) {
+            name="21+3(3-8 decks)";
+        }
+    }
+
+    public int getId() { return id;}
 
     @Override
     public void resetPayout() {

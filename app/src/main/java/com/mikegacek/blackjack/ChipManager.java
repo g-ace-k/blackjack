@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public class ChipManager  implements Serializable {
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 16L;
 
     static final int BET=1;
     static final int REMOVE=-1;
@@ -30,7 +30,7 @@ public class ChipManager  implements Serializable {
 
     private int money,shownMoney,sideBetLeftMoney,sideBetRightMoney,mainBetMoney,playerHandMoney,playerSplitOneMoney,playerSplitTwoMoney,playerSplitThreeMoney,insuranceMoney,surrenderMoney;
     private int chipSelection,chipLocation;
-    private transient Button chip1,chip5,chip25,chip100,chip500,chip1000,chip10000,betChips,removeChips,dealButton,repeat,previousArrow,freeChips,doubleBetButton;
+    private Button chip1,chip5,chip25,chip100,chip500,chip1000,chip10000,betChips,removeChips,dealButton,repeat,previousArrow,freeChips,doubleBetButton;
     private Circle middle,left,right;
     private int direction;
 
@@ -49,7 +49,7 @@ public class ChipManager  implements Serializable {
         doubleBetButton = new Button(363,109,186,77,Assets.doubleBetButton);
         dealButton = new Button(756,277,540,920,Assets.dealButton);
         dealButton.setAlpha(0);
-        freeChips = new Button(272,103,270,460,Assets.freeChips);
+        freeChips = new Button(756,277,540,920,Assets.freeChipsButton);
         freeChips.setAlpha(0);
         previousArrow = new Button(128,128,1000,1700,Assets.previousArrow);
         chipSelection=0;
@@ -671,9 +671,11 @@ public class ChipManager  implements Serializable {
         switch(selection) {
             case 1:
                 remove(sideBetLeft,sideBetLeftChips);
+                sideBetLeftMoney=0;
                 break;
             case 2:
                 remove(sideBetRight,sideBetRightChips);
+                sideBetRightMoney=0;
                 break;
             case 3:
                 remove(mainBet,mainBetChips);
@@ -962,24 +964,29 @@ public class ChipManager  implements Serializable {
         }
     }
 
-    public void repeatBet() {
+    public void repeatBet(int sbl, int sbr) {
         //compare the old with current and match for each side
         //compare to left
-        if(repeatTotal()!=0)
+        if(repeatTotal(sbl,sbr)!=0)
             Assets.largeStackOfChips.play(MainScreen.sound);
-
-        repeat(repeatSBL,sideBetLeftChips,sideBetLeft,1);
-        repeat(repeatSBR, sideBetRightChips, sideBetRight,2);
+        if(sbl!=0)
+            repeat(repeatSBL,sideBetLeftChips,sideBetLeft,1);
+        if(sbr!=0)
+            repeat(repeatSBR, sideBetRightChips, sideBetRight,2);
         repeat(repeatMainBet, mainBetChips, mainBet, 3);
     }
 
-    public int repeatTotal() {
+    public int repeatTotal(int sbl,int sbr) {
         int repeat=0;
-        for(int i=0;i<repeatSBL.length;i++) {
-            repeat+=values[i]*repeatSBL[i];
+        if(sbl!=0) {
+            for (int i = 0; i < repeatSBL.length; i++) {
+                repeat += values[i] * repeatSBL[i];
+            }
         }
-        for(int i=0;i<repeatSBR.length;i++) {
-            repeat+=values[i]*repeatSBR[i];
+        if(sbr!=0) {
+            for (int i = 0; i < repeatSBR.length; i++) {
+                repeat += values[i] * repeatSBR[i];
+            }
         }
         for(int i=0;i<repeatMainBet.length;i++) {
             repeat+=values[i]*repeatMainBet[i];
@@ -992,20 +999,20 @@ public class ChipManager  implements Serializable {
     }
 
     public void loadData() {
-        chip1= new Button(67,67,62,580,Assets.chip1);
-        chip5= new Button(67,67,131 ,595,Assets.chip5);
-        chip25= new Button(67,67,200,605,Assets.chip25);
-        chip100 = new Button(67,67,269,610,Assets.chip100);
-        chip500= new Button(67,67,338,605,Assets.chip500);
-        chip1000=new Button(67,67,407,595,Assets.chip1000);
-        chip10000=new Button(67,67,476,580,Assets.chip10000);
-        betChips = new Button(64,64,101,510,Assets.addChips);
-        repeat = new Button(64,64,437,510,Assets.repeatBetButton);
-        dealButton = new Button(272,103,270,460,Assets.dealButton);
-        dealButton.setAlpha(0);
-        freeChips = new Button(272,103,270,460,Assets.freeChips);
-        freeChips.setAlpha(0);
-        previousArrow = new Button(128,128,1000,1700,Assets.previousArrow);
+        chip1.setTextureRegion(Assets.chip1);
+        chip5.setTextureRegion(Assets.chip5);
+        chip25.setTextureRegion(Assets.chip25);
+        chip100.setTextureRegion(Assets.chip100);
+        chip500.setTextureRegion(Assets.chip500);
+        chip1000.setTextureRegion(Assets.chip1000);
+        chip10000.setTextureRegion(Assets.chip10000);
+        betChips.setTextureRegion(Assets.addChips);
+        removeChips.setTextureRegion(Assets.removeChips);
+        repeat.setTextureRegion(Assets.repeatBetButton);
+        doubleBetButton.setTextureRegion(Assets.doubleBetButton);
+        dealButton.setTextureRegion(Assets.dealButton);
+        freeChips.setTextureRegion(Assets.freeChipsButton);
+        previousArrow.setTextureRegion(Assets.previousArrow);
 
         for(Chip chip: chips) {
             chip.loadTexture();

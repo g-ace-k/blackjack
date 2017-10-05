@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.chartboost.sdk.CBLocation;
+import com.chartboost.sdk.Chartboost;
 import com.google.android.gms.ads.MobileAds;
 import com.mikegacek.blackjack.framework.Screen;
 import com.mikegacek.blackjack.framework.impl.GLGame;
@@ -31,6 +33,7 @@ public class Blackjack extends GLGame {
         editor=sharedPreferences.edit();
 
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-3350697134197623~3373329190");
+        Chartboost.cacheInterstitial(CBLocation.LOCATION_DEFAULT);
 
         if(firstTimeCreate) {
             Assets.load(this);

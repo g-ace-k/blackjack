@@ -16,7 +16,9 @@ import java.util.ArrayList;
 public class PerfectPairs implements SideBets,Serializable {
 
     private int version;
+    private final int id=1;
     private int payout,bet,position;
+    private String name;
     private transient ArrayList<TextureRegion> payouts;
 
     public PerfectPairs(int version,int p) {
@@ -24,6 +26,7 @@ public class PerfectPairs implements SideBets,Serializable {
         payout=-1;
         bet=0;
         position=p;
+        updateName();
         payouts = new ArrayList<TextureRegion>();
         createPayoutTextures(version);
     }
@@ -47,6 +50,7 @@ public class PerfectPairs implements SideBets,Serializable {
 
     public void setVersion(int version) {
         this.version = version;
+        updateName();
     }
 
     public int getPayout() {
@@ -66,6 +70,26 @@ public class PerfectPairs implements SideBets,Serializable {
     public void setPosition(int position) {
 
     }
+
+    public int getBet() { return bet;}
+
+    public void setBet(int b) { bet=b;}
+
+    public String getName() {
+        return name;
+    }
+
+    public void updateName() {
+        if(version==0) {
+            name="None";
+        }
+        else if(version==1) {
+            name="Perfect Pairs";
+        }
+
+    }
+
+    public int getId() { return id;}
 
     @Override
     public void resetPayout() {

@@ -1,5 +1,7 @@
 package com.mikegacek.blackjack;
 
+import android.util.Log;
+
 import java.io.Serializable;
 
 /**
@@ -8,9 +10,13 @@ import java.io.Serializable;
 
 public class StatisticsManager implements Serializable {
 
+    private static final long serialVersionUID = 16L;
+
     private int playerBlackjacks,dealerBlackjacks,handsPlayed,handsWon,handsLost,moneyBet,moneyWon,moneyLost;
     private int doubleDownTotal,doubleDownWon,doubleDownLost,splitsTotal,insuranceTotal,insuranceWon,surrenderTotal;
     private int perfectPairsTotal,perfectPairsWon,perfectPairsIncome,twentyOneTotal,twentyOneWon,twentyOneV1Income,twentyOneV2Income;
+
+    private Button exitButton,resetButton;
 
     public StatisticsManager() {
         playerBlackjacks=0;
@@ -35,6 +41,9 @@ public class StatisticsManager implements Serializable {
         twentyOneWon=0;
         twentyOneV1Income=0;
         twentyOneV2Income=0;
+
+        exitButton = new Button(508,97,540,53,Assets.statsExitButton);
+        resetButton = new Button(169,53,970,1869,Assets.statsResetButton);
     }
 
     public int getPlayerBlackjacks() {
@@ -211,5 +220,41 @@ public class StatisticsManager implements Serializable {
 
     public void setTwentyOneV2Income(int twentyOneV2Income) {
         this.twentyOneV2Income = twentyOneV2Income;
+    }
+
+    public Button getExitButton() { return exitButton;}
+
+    public Button getResetButton() { return resetButton;}
+
+    public void resetStats() {
+        playerBlackjacks=0;
+        dealerBlackjacks=0;
+        handsPlayed=0;
+        handsWon=0;
+        handsLost=0;
+        moneyBet=0;
+        moneyWon=0;
+        moneyLost=0;
+        doubleDownTotal=0;
+        doubleDownWon=0;
+        doubleDownLost=0;
+        splitsTotal=0;
+        insuranceTotal=0;
+        insuranceWon=0;
+        surrenderTotal=0;
+        perfectPairsTotal=0;
+        perfectPairsWon=0;
+        perfectPairsIncome=0;
+        twentyOneTotal=0;
+        twentyOneWon=0;
+        twentyOneV1Income=0;
+        twentyOneV2Income=0;
+    }
+
+    public void loadData() {
+        exitButton.setTextureRegion(Assets.statsExitButton);
+        resetButton.setTextureRegion(Assets.statsResetButton);
+
+        Log.d("Loaded","Loaded");
     }
 }

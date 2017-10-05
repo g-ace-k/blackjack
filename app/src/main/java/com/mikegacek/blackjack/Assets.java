@@ -28,7 +28,6 @@ public class Assets implements Serializable{
     public static Texture payouts;
     public static Texture slotMachine;
     public static Texture slotMachineNumbers;
-    public static Texture menu;
     public static Texture settingsFont;
     public static Texture calibriText;
     public static Texture shoeMeter;
@@ -36,6 +35,7 @@ public class Assets implements Serializable{
     public static Texture menuButtons;
     public static Texture settingsBackground;
     public static Texture settingsForeground;
+    public static Texture statsBackground;
 
     public static TextureRegion green;
     public static TextureRegion blue;
@@ -80,16 +80,11 @@ public class Assets implements Serializable{
     public static TextureRegion menuButton;
     public static TextureRegion menuArrowRight;
     public static TextureRegion menuArrowLeft;
-    public static TextureRegion deckMenu;
-    public static TextureRegion gameplayMenu;
-    public static TextureRegion sidebetMenu;
-    public static TextureRegion radioButtonOn;
     public static TextureRegion settingsHit;
     public static TextureRegion settingsStand;
     public static TextureRegion anyTwo;
     public static TextureRegion nineToEleven;
     public static TextureRegion tenToEleven;
-    public static TextureRegion freeChips;
     public static TextureRegion hint;
     public static TextureRegion play;
     public static TextureRegion highlightLeft;
@@ -136,6 +131,10 @@ public class Assets implements Serializable{
     public static TextureRegion settingsBack;
     public static TextureRegion settingsFore;
 
+    public static TextureRegion stats;
+    public static TextureRegion statsExitButton;
+    public static TextureRegion statsResetButton;
+
     public static Sound slotMachineSpinner;
     public static Sound winningBet;
     public static Sound multiChips;
@@ -154,13 +153,6 @@ public class Assets implements Serializable{
     public static TextureRegion blackjackPayout;
     public static TextureRegion dealerSetting;
 
-    //TEST
-
-    public static Texture testSettings;
-    public static TextureRegion testSettingsBackground;
-    public static Texture testC;
-    public static TextureRegion testColor;
-
     public static void load(GLGame game) {
 
         calibriText= new Texture(game,"calibriText.png");
@@ -177,13 +169,6 @@ public class Assets implements Serializable{
         blue = new TextureRegion(blueBackground, 0, 0, 1080, 1920);
         red = new TextureRegion(redBackground, 0, 0, 1080, 1920);
         purple = new TextureRegion(purpleBackground, 0, 0, 1080, 1920);
-
-        settingsFont = new Texture(game, "settingsFont2.png");
-        settingsHit = new TextureRegion(settingsFont, 0, 64, 82, 42);
-        settingsStand = new TextureRegion(settingsFont, 98, 64, 169, 42);
-        anyTwo = new TextureRegion(settingsFont, 284, 64, 153, 42);
-        nineToEleven = new TextureRegion(settingsFont, 0, 112, 265, 42);
-        tenToEleven = new TextureRegion(settingsFont, 286, 112, 294, 42);
 
         edgeBackground = new Texture(game, "edge.png");
         edge = new TextureRegion(edgeBackground, 0, 0, 1080, 200);
@@ -261,8 +246,8 @@ public class Assets implements Serializable{
 
         slotMachine = new Texture(game, "slotMachine.png");
         slot = new TextureRegion(slotMachine, 0, 0, 335, 240);
-        leftArrow = new TextureRegion(slotMachine, 0, 240, 70, 42);
-        rightArrow = new TextureRegion(slotMachine, 42, 240, 70, 42);
+        leftArrow = new TextureRegion(slotMachine, 0, 241, 70, 42);
+        rightArrow = new TextureRegion(slotMachine, 44, 241, 70, 42);
         arrow = new TextureRegion(slotMachine, 334, 228, 64, 71);
         arrowEnd = new TextureRegion(slotMachine, 348, 203, 36, 22);
         slotArmConnection = new TextureRegion(slotMachine, 352, 0, 46, 58);
@@ -271,11 +256,6 @@ public class Assets implements Serializable{
 
         slotMachineNumbers = new Texture(game, "SlotMachineNumbers.png");
         slotNumbers = new TextureRegion(slotMachineNumbers, 0, 0, 225, 107);
-
-        menu = new Texture(game, "menu.png");
-        deckMenu = new TextureRegion(menu, 0, 0, 540, 960);
-        gameplayMenu = new TextureRegion(menu, 540, 0, 540, 960);
-        sidebetMenu = new TextureRegion(menu, 1080, 0, 540, 960);
 
         shoeMeter = new Texture(game,"shoeMeter.png");
         meterText = new TextureRegion(shoeMeter,0,0,300,41);
@@ -301,6 +281,11 @@ public class Assets implements Serializable{
         soundOffMenuButton = new TextureRegion(menuButtons,0,833,934,100);
         menuBackArrowButton = new TextureRegion(menuButtons,934,239,99,99);
 
+        statsBackground = new Texture(game,"statsBackground.png");
+        stats = new TextureRegion(statsBackground,0,0,1080,1920);
+        statsExitButton = new TextureRegion(buttons,655,1388,508,97);
+        statsResetButton = new TextureRegion(buttons,993,1336,169,53);
+
         slotMachineSpinner = game.getAudio().newSound("SlotMachineSpinner.wav");
         winningBet=game.getAudio().newSound("WinningBet3.wav");
         push = game.getAudio().newSound("WinningBet2.wav");
@@ -312,16 +297,6 @@ public class Assets implements Serializable{
         largeStackOfChips=game.getAudio().newSound("LargeStackOfChips.wav");
         dealCard=game.getAudio().newSound("DealCard.wav");
         button=game.getAudio().newSound("Button.wav");
-
-
-
-        //TEST
-        testSettings = new Texture(game,"testSettings.png");
-        testSettingsBackground = new TextureRegion(testSettings,0,0,1080,1920);
-
-        testC = new Texture(game,"testColor.png");
-        testColor = new TextureRegion(testC,0,0,100,100);
-
 
     }
 
@@ -342,13 +317,15 @@ public class Assets implements Serializable{
         payouts.reload();
         slotMachine.reload();
         slotMachineNumbers.reload();
-        menu.reload();
-        settingsFont.reload();
         calibriText.reload();
         shoeMeter.reload();
         menuBack.reload();
         menuButtons.reload();
         tableSettings.reload();
+        settingsBackground.reload();
+        settingsForeground.reload();
+        statsBackground.reload();
+
     }
 
     public static void reloadSound(GLGame game) {

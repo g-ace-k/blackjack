@@ -14,7 +14,7 @@ import java.util.Collections;
  */
 public class GameManager  implements Serializable{
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 16L;
 
     private ArrayList<Card> cards;
     public ArrayList<Card> shuffling;
@@ -105,12 +105,15 @@ public class GameManager  implements Serializable{
         if(decks>1)
             sideBetLeft= new PerfectPairs(1,0);
         else
-            sideBetLeft=null;
+            sideBetLeft= new PerfectPairs(0,0);
 
         if(decks>2)
             sideBetRight= new TwentyOnePlusThree(2,1);
         else
             sideBetRight = new TwentyOnePlusThree(1,1);
+
+        oldSideBetLeft = new PerfectPairs(0,0);
+        oldSideBetRight = new PerfectPairs(0,1);
 
     }
 
@@ -176,16 +179,8 @@ public class GameManager  implements Serializable{
         return oldSideBetLeft;
     }
 
-    public void setOldSideBetLeft(SideBets oldSideBetLeft) {
-        this.oldSideBetLeft = oldSideBetLeft;
-    }
-
     public SideBets getOldSideBetRight() {
         return oldSideBetRight;
-    }
-
-    public void setOldSideBetRight(SideBets oldSideBetRight) {
-        this.oldSideBetRight = oldSideBetRight;
     }
 
     public int getPointer() { return pointer;}
@@ -1094,6 +1089,36 @@ public class GameManager  implements Serializable{
         insurance=false;
     }
 
+    public void checkSideBetDeckRestriction(SideBets s) {
+        int id=s.getId();
+        switch(id) {
+            case 1: //Perfect Pairs
+                if(settingsManager.getDecks()<2)
+                    s.setVersion(0);
+                break;
+            case 2: //21+3
+                if(s.getVersion()==2 && settingsManager.getDecks()<3)
+                    s.setVersion(0);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void changeSideBet(SideBets s, int id, int version,int position) {
+        switch(id) {
+            case 1: //Perfect Pairs
+                s = new PerfectPairs(version,position);
+                break;
+            case 2: //21+3
+                s = new TwentyOnePlusThree(version,position);
+                break;
+            default:
+                s = new PerfectPairs(0,position);
+                break;
+        }
+    }
+
     //this method is run when cards have been dealt for a new hand
     public void checkSideBets() {
         if(chipManager.getSideBetLeftMoney()!=0) {
@@ -1110,6 +1135,25 @@ public class GameManager  implements Serializable{
             sideBetRight.setPayout(0);
         }
 
+
+        if(sideBetLeft.getId()==1) {
+            oldSideBetLeft = new PerfectPairs(sideBetLeft.getVersion(),0);
+        }
+        else if(sideBetLeft.getId()==2) {
+            oldSideBetLeft = new TwentyOnePlusThree(sideBetLeft.getVersion(),0);
+        }
+
+        if(sideBetRight.getId()==1) {
+            oldSideBetRight = new PerfectPairs(sideBetRight.getVersion(),1);
+        }
+        else if(sideBetRight.getId()==2) {
+            oldSideBetRight = new TwentyOnePlusThree(sideBetRight.getVersion(),1);
+        }
+
+        oldSideBetLeft.setPayout(sideBetLeft.getPayout());
+        oldSideBetLeft.setBet(sideBetLeft.getBet());
+        oldSideBetRight.setPayout(sideBetRight.getPayout());
+        oldSideBetRight.setBet(sideBetRight.getBet());
 
     }
 
@@ -1754,13 +1798,41 @@ public class GameManager  implements Serializable{
 
         sideBetLeft.load();
         sideBetRight.load();
+        oldSideBetLeft.load();
+        oldSideBetRight.load();
 
-        settings.loadTexture(1);
-        rules.loadTexture(2);
-        freeChips.loadTexture(3);
-        sound.loadTexture(4);
+        //load button textures
+
+        hitButton.setTextureRegion(Assets.hitButton);
+        standButton.setTextureRegion(Assets.standButton);
+        doubleButton.setTextureRegion(Assets.doubleButton);
+        splitButton.setTextureRegion(Assets.splitButton);
+        surrenderButton.setTextureRegion(Assets.surrenderButton);
+        hintButton.setTextureRegion(Assets.hint);
+        playButton.setTextureRegion(Assets.play);
+
+        menuBackground.setTextureRegion(Assets.menuBackground);
+
+        settings.setTextureRegion(Assets.settingsMenuButton);
+        statistics.setTextureRegion(Assets.statisticsMenuButton);
+        freeChips.setTextureRegion(Assets.freeChipsMenuButton);
+        earnChips.setTextureRegion(Assets.earnChipsMenuButton);
+        rules.setTextureRegion(Assets.rulesMenuButton);
+        sound.setTextureRegion(Assets.soundOnMenuButton);
+
+        menuBackArrow.setTextureRegion(Assets.menuBackArrowButton);
+
+        tableGreen.setTextureRegion(Assets.greenTableButton);
+        tableBlue.setTextureRegion(Assets.blueTableButton);
+        tableRed.setTextureRegion(Assets.redTableButton);
+        tablePurple.setTextureRegion(Assets.purpleTableButton);
+
+        yes.setTextureRegion(Assets.yes);
+        no.setTextureRegion(Assets.no);
+        menu.setTextureRegion(Assets.menuButton);
+
         if(settingsManager.getSound()==0)
-            sound.setTextureRegion(Assets.soundOffButton);
+            sound.setTextureRegion(Assets.soundOffMenuButton);
 
 
         for(Card card:cards) {

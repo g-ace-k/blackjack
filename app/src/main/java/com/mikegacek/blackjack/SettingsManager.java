@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class SettingsManager implements Serializable{
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 16L;
 
     private Slider deckPenetration;
     private Toggle CSMToggle,insuranceToggle,surrenderToggle,resplitAcesToggle,hitSplitAcesToggle,doubleSplitAcesToggle,doubleAfterSplitToggle;
@@ -17,11 +17,11 @@ public class SettingsManager implements Serializable{
 
     private int decks,penetration,dealer,split,doubleDown,sound;
     private double blackjackPays;
-    private boolean csm,insurance,surrender,resplit,hitAces,doubleAces,das,perfectPairs,twentyOneV1,twentyOneV2;
+    private boolean csm,insurance,surrender,resplit,hitAces,doubleAces,das;
 
-    private int decksTemp,penetrationTemp,dealerTemp,splitTemp,doubleDownTemp;
+    private int decksTemp,penetrationTemp,dealerTemp,splitTemp,doubleDownTemp,sideBetLeftIdTemp,sideBetRightIdTemp,sideBetLeftVersionTemp,sideBetRightVersionTemp;
     private double blackjackPaysTemp;
-    private boolean csmTemp,insuranceTemp,surrenderTemp,resplitTemp,hitAcesTemp,doubleAcesTemp,dasTemp,perfectPairsTemp,twentyOneV1Temp,twentyOneV2Temp;
+    private boolean csmTemp,insuranceTemp,surrenderTemp,resplitTemp,hitAcesTemp,doubleAcesTemp,dasTemp;
 
     private boolean newDeck,changeSideBets;
     //list location 0=off 1= side bet 1 2= side bet 2
@@ -91,9 +91,10 @@ public class SettingsManager implements Serializable{
         doubleAces=false;
         das=true;
         doubleAfterSplitToggle.setOn(true);
-        perfectPairs=true;
-        twentyOneV2=true;
-        twentyOneV1=false;
+        sideBetLeftIdTemp=1;
+        sideBetLeftVersionTemp=1;
+        sideBetRightIdTemp=2;
+        sideBetRightVersionTemp=2;
 
         newDeck=false;
         changeSideBets=false;
@@ -360,30 +361,6 @@ public class SettingsManager implements Serializable{
         this.das = das;
     }
 
-    public boolean getPerfectPairs() {
-        return perfectPairs;
-    }
-
-    public void setPerfectPairs(boolean perfectPairs) {
-        this.perfectPairs = perfectPairs;
-    }
-
-    public boolean getTwentyOneV1() {
-        return twentyOneV1;
-    }
-
-    public void setTwentyOneV1(boolean twentyOneV1) {
-        this.twentyOneV1 = twentyOneV1;
-    }
-
-    public boolean getTwentyOneV2() {
-        return twentyOneV2;
-    }
-
-    public void setTwentyOneV2(boolean twentyOneV2) {
-        this.twentyOneV2 = twentyOneV2;
-    }
-
     public int getDecksTemp() {
         return decksTemp;
     }
@@ -488,29 +465,7 @@ public class SettingsManager implements Serializable{
         this.dasTemp = dasTemp;
     }
 
-    public boolean getPerfectPairsTemp() {
-        return perfectPairsTemp;
-    }
 
-    public void setPerfectPairsTemp(boolean perfectPairsTemp) {
-        this.perfectPairsTemp = perfectPairsTemp;
-    }
-
-    public boolean getTwentyOneV1Temp() {
-        return twentyOneV1Temp;
-    }
-
-    public void setTwentyOneV1Temp(boolean twentyOneV1Temp) {
-        this.twentyOneV1Temp = twentyOneV1Temp;
-    }
-
-    public boolean getTwentyOneV2Temp() {
-        return twentyOneV2Temp;
-    }
-
-    public void setTwentyOneV2Temp(boolean twentyOneV2Temp) {
-        this.twentyOneV2Temp = twentyOneV2Temp;
-    }
 
     public boolean getNewDeck() {
         return newDeck;
@@ -528,10 +483,20 @@ public class SettingsManager implements Serializable{
         this.changeSideBets = changeSideBets;
     }
 
-    public void checkSideBets() {
-        setPerfectPairs(perfectPairs);
-        setTwentyOneV1(twentyOneV1);
-        setTwentyOneV2(twentyOneV2);
+    public int getSideBetRightVersionTemp() {
+        return sideBetRightVersionTemp;
+    }
+
+    public int getSideBetLeftIdTemp() {
+        return sideBetLeftIdTemp;
+    }
+
+    public int getSideBetRightIdTemp() {
+        return sideBetRightIdTemp;
+    }
+
+    public int getSideBetLeftVersionTemp() {
+        return sideBetLeftVersionTemp;
     }
 
     public void enterSettingsCheck() {
@@ -591,7 +556,7 @@ public class SettingsManager implements Serializable{
         s.setxPos(penetration*(s.getBarXEnd()-s.getBarXStart())/100+s.getBarXStart());
     }
 
-    public void loadSettings() {
+    public void loadSettings(SideBets left, SideBets right) {
         decksTemp=decks;
         penetrationTemp=penetration;
         dealerTemp=dealer;
@@ -605,9 +570,10 @@ public class SettingsManager implements Serializable{
         hitAcesTemp=hitAces;
         doubleAcesTemp=doubleAces;
         dasTemp=das;
-        perfectPairsTemp=perfectPairs;
-        twentyOneV1Temp=twentyOneV1;
-        twentyOneV2Temp=twentyOneV2;
+        sideBetLeftVersionTemp=left.getVersion();
+        sideBetLeftIdTemp=left.getId();
+        sideBetRightVersionTemp=right.getVersion();
+        sideBetRightIdTemp=right.getId();
     }
 
     public void revertSettings() {
@@ -624,9 +590,82 @@ public class SettingsManager implements Serializable{
         hitAces=hitAcesTemp;
         doubleAces=doubleAcesTemp;
         das=dasTemp;
-        perfectPairs=perfectPairsTemp;
-        twentyOneV1=twentyOneV1Temp;
-        twentyOneV2=twentyOneV2Temp;
+        switch(decks) {
+            case 1:
+                revertButtons(deck1,deck2,deck3,deck4,deck5,deck6,deck7,deck8);
+                break;
+            case 2:
+                revertButtons(deck2,deck1,deck3,deck4,deck5,deck6,deck7,deck8);
+                break;
+            case 3:
+                revertButtons(deck3,deck2,deck1,deck4,deck5,deck6,deck7,deck8);
+                break;
+            case 4:
+                revertButtons(deck4,deck2,deck3,deck1,deck5,deck6,deck7,deck8);
+                break;
+            case 5:
+                revertButtons(deck5,deck2,deck3,deck4,deck1,deck6,deck7,deck8);
+                break;
+            case 6:
+                revertButtons(deck6,deck2,deck3,deck4,deck5,deck1,deck7,deck8);
+                break;
+            case 7:
+                revertButtons(deck7,deck2,deck3,deck4,deck5,deck6,deck1,deck8);
+                break;
+            case 8:
+                revertButtons(deck8,deck2,deck3,deck4,deck5,deck6,deck7,deck1);
+                break;
+        }
+        if(blackjackPays==1.5)
+            revertButtons(blackjackPays32,blackjackPays75,blackjackPays65,blackjackPays11);
+        else if(blackjackPays==1.4)
+            revertButtons(blackjackPays75,blackjackPays32,blackjackPays65,blackjackPays11);
+        else if(blackjackPays==1.2)
+            revertButtons(blackjackPays65,blackjackPays75,blackjackPays32,blackjackPays11);
+        else if(blackjackPays==1)
+            revertButtons(blackjackPays11,blackjackPays75,blackjackPays65,blackjackPays32);
+
+        if(dealer==1)
+            revertButtons(dealerStand,dealerHit);
+        else
+            revertButtons(dealerHit,dealerStand);
+
+        switch(split) {
+            case 2:
+                revertButtons(split2,split3,split4);
+                break;
+            case 3:
+                revertButtons(split3,split2,split4);
+                break;
+            case 4:
+                revertButtons(split4,split3,split2);
+                break;
+        }
+
+        if(doubleDown==1) {
+            revertButtons(doubleAny2,double911,double1011);
+        }
+        else if(doubleDown==2) {
+            revertButtons(double911,doubleAny2,double1011);
+        }
+        else if(doubleDown==3) {
+            revertButtons(double1011,doubleAny2,double911);
+        }
+
+        CSMToggle.setOn(csm);
+        insuranceToggle.setOn(insurance);
+        surrenderToggle.setOn(surrender);
+        resplitAcesToggle.setOn(resplit);
+        hitSplitAcesToggle.setOn(hitAces);
+        doubleSplitAcesToggle.setOn(doubleAces);
+        doubleAfterSplitToggle.setOn(das);
+    }
+
+    private void revertButtons(Button b, Button... bs) {
+        b.setOn(true);
+        for(Button button: bs) {
+            button.setOn(false);
+        }
     }
 
     public boolean isDeckShuffleNeeded() {
@@ -636,10 +675,10 @@ public class SettingsManager implements Serializable{
             return true;
     }
 
-    public boolean wereSettingsChanged() {
+    public boolean wereSettingsChanged(SideBets left, SideBets right) {
         if(decks==decksTemp && penetration==penetrationTemp && dealer==dealerTemp && split==splitTemp && doubleDown==doubleDownTemp &&
                 blackjackPays==blackjackPaysTemp && csm==csmTemp && insurance==insuranceTemp && surrender==surrenderTemp && resplit==resplitTemp && hitAces==hitAcesTemp &&
-                doubleAces==doubleAcesTemp && das==dasTemp && perfectPairs==perfectPairsTemp && twentyOneV1==twentyOneV1Temp && twentyOneV2==twentyOneV2Temp)
+                doubleAces==doubleAcesTemp && das==dasTemp && sideBetLeftIdTemp==left.getId() && sideBetLeftVersionTemp==left.getVersion() && sideBetRightIdTemp==right.getId() && sideBetRightVersionTemp==right.getVersion())
             return false;
         else
             return true;
@@ -647,6 +686,35 @@ public class SettingsManager implements Serializable{
 
 
     public void loadData() {
+        deck1.setTextureRegion(Assets.settingsSmallHighlight);
+        deck2.setTextureRegion(Assets.settingsSmallHighlight);
+        deck3.setTextureRegion(Assets.settingsSmallHighlight);
+        deck4.setTextureRegion(Assets.settingsSmallHighlight);
+        deck5.setTextureRegion(Assets.settingsSmallHighlight);
+        deck6.setTextureRegion(Assets.settingsSmallHighlight);
+        deck7.setTextureRegion(Assets.settingsSmallHighlight);
+        deck8.setTextureRegion(Assets.settingsSmallHighlight);
 
+        blackjackPays32.setTextureRegion(Assets.settingsSmallHighlight);
+        blackjackPays75.setTextureRegion(Assets.settingsSmallHighlight);
+        blackjackPays65.setTextureRegion(Assets.settingsSmallHighlight);
+        blackjackPays11.setTextureRegion(Assets.settingsSmallHighlight);
+
+        dealerStand.setTextureRegion(Assets.settingsLargeHighlight);
+        dealerHit.setTextureRegion(Assets.settingsLargeHighlight);
+
+        split2.setTextureRegion(Assets.settingsSmallHighlight);
+        split3.setTextureRegion(Assets.settingsSmallHighlight);
+        split4.setTextureRegion(Assets.settingsSmallHighlight);
+
+        doubleAny2.setTextureRegion(Assets.settingsLargeHighlight);
+        double911.setTextureRegion(Assets.settingsLargeHighlight);
+        double1011.setTextureRegion(Assets.settingsLargeHighlight);
+
+        exitSettings.setTextureRegion(Assets.settingsExitButton);
+
+        listButton.setTextureRegion(Assets.listButton);
+        sideBet1Arrow.setTextureRegion(Assets.settingsOrangeArrow);
+        sideBet2Arrow.setTextureRegion(Assets.settingsOrangeArrow);
     }
 }

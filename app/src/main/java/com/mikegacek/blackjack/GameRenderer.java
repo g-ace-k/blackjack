@@ -1,5 +1,6 @@
 package com.mikegacek.blackjack;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.mikegacek.blackjack.framework.gl.Camera2D;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  */
 public class GameRenderer implements Serializable{
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 16L;
 
     private transient SpriteBatcher batcher;
     private transient GLGraphics glGraphics;
@@ -25,26 +26,31 @@ public class GameRenderer implements Serializable{
     private transient ChipManager chipManager;
     private transient SlotMachine slotMachine;
     private transient SettingsManager settingsManager;
+    private transient StatisticsManager statisticsManager;
     private transient Camera2D cam;
     private float bettingAlphas,insuranceAlphas;
     private float hand1Alpha,hand2Alpha,hand3Alpha,hand4Alpha,dealerHandAlpha;
     private float light;
-    private Texture backgroundTexture;
-    private TextureRegion backgroundTextureRegion;
+    private transient Texture backgroundTexture;
+    private transient TextureRegion backgroundTextureRegion;
+    private int backgroundId;
 
-    public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settings) {
+    public GameRenderer(GLGraphics glGraphics, SpriteBatcher batcher, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settings, StatisticsManager statisticsManager) {
         this.batcher=batcher;
         this.glGraphics=glGraphics;
         this.gameManager=gameManager;
         this.chipManager=chipManager;
         this.slotMachine=slotMachine;
         this.settingsManager=settings;
+        this.statisticsManager=statisticsManager;
         this.cam = new Camera2D(glGraphics, 540, 960);
         bettingAlphas=1;
         insuranceAlphas=0;
         light=1;
         backgroundTexture=Assets.greenBackground;
         backgroundTextureRegion=Assets.green;
+        //1 green 2 blue 3 red 4 purple
+        backgroundId=1;
     }
 
     public void render(int state) {
@@ -83,9 +89,76 @@ public class GameRenderer implements Serializable{
         }
         else if(state==5)
             renderSettings();
+        else if(state==6) {
+            renderStatistics();
+        }
 
     }
+    private void renderStatistics() {
+        batcher.beginBatch(Assets.statsBackground);
+        batcher.drawSprite(540,960,1080,1920,Assets.stats);
+        batcher.endBatch();
 
+        renderPressedButton(Assets.buttons,statisticsManager.getExitButton());
+        renderPressedButton(Assets.buttons,statisticsManager.getResetButton());
+
+        //Render Stats amount in text format
+
+        CalibriFont.drawNumbers(statisticsManager.getHandsPlayed()+"",395,1855,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getHandsWon()+"",341,1783,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getHandsLost()+"",324,1712,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getPlayerBlackjacks()+"",475,1640,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getDealerBlackjacks()+"",485,1569,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers("$"+statisticsManager.getMoneyBet(),335,1497,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers("$"+statisticsManager.getMoneyWon(),359,1425,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers("$"+statisticsManager.getMoneyLost(),342,1354,1,1,1,1,.65f,.65f,batcher,glGraphics);
+
+        //insert net income with color
+        if(statisticsManager.getMoneyLost()>statisticsManager.getMoneyWon()) {
+            CalibriFont.drawNumbers("-$"+(statisticsManager.getMoneyLost()-statisticsManager.getMoneyWon()),350,1282,1,0,0,1,.65f,.65f,batcher,glGraphics);
+        }
+        else {
+            CalibriFont.drawNumbers("+$"+(statisticsManager.getMoneyWon()-statisticsManager.getMoneyLost()),350,1282,0,1,0,1,.65f,.65f,batcher,glGraphics);
+        }
+
+        CalibriFont.drawNumbers(statisticsManager.getDoubleDownTotal()+"",417,1139,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getDoubleDownWon()+"",533,1067,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getDoubleDownLost()+"",517,996,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getSplitsTotal()+"",203,924,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getInsuranceTotal()+"",422,852,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getInsuranceWon()+"",539,781,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getSurrenderTotal()+"",336,709,1,1,1,1,.65f,.65f,batcher,glGraphics);
+
+        CalibriFont.drawNumbers(statisticsManager.getPerfectPairsTotal()+"",541,556,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getPerfectPairsWon()+"",487,494,1,1,1,1,.65f,.65f,batcher,glGraphics);
+
+        if(statisticsManager.getPerfectPairsIncome()<0) {
+            CalibriFont.drawNumbers("-$"+(statisticsManager.getPerfectPairsIncome()*-1),652,423,1,0,0,1,.65f,.65f,batcher,glGraphics);
+        }
+        else {
+            CalibriFont.drawNumbers("+$"+(statisticsManager.getPerfectPairsIncome()),652,423,0,1,0,1,.65f,.65f,batcher,glGraphics);
+        }
+
+        CalibriFont.drawNumbers(statisticsManager.getTwentyOneTotal()+"",364,351,1,1,1,1,.65f,.65f,batcher,glGraphics);
+        CalibriFont.drawNumbers(statisticsManager.getTwentyOneWon()+"",310,279,1,1,1,1,.65f,.65f,batcher,glGraphics);
+
+        if(statisticsManager.getTwentyOneV1Income()<0) {
+            CalibriFont.drawNumbers("-$"+(statisticsManager.getTwentyOneV1Income()*-1),749,208,1,0,0,1,.65f,.65f,batcher,glGraphics);
+        }
+        else {
+            CalibriFont.drawNumbers("+$"+(statisticsManager.getTwentyOneV1Income()),749,208,0,1,0,1,.65f,.65f,batcher,glGraphics);
+        }
+
+        if(statisticsManager.getTwentyOneV2Income()<0) {
+            CalibriFont.drawNumbers("-$"+(statisticsManager.getTwentyOneV2Income()*-1),749,136,1,0,0,1,.65f,.65f,batcher,glGraphics);
+        }
+        else {
+            CalibriFont.drawNumbers("+$"+(statisticsManager.getTwentyOneV2Income()),749,136,0,1,0,1,.65f,.65f,batcher,glGraphics);
+        }
+
+
+
+    }
 
     private void renderSettings() {
         //Background
@@ -137,6 +210,11 @@ public class GameRenderer implements Serializable{
         batcher.drawSprite(settingsManager.getSideBet1Arrow(),settingsManager.getSideBet1Arrow().getRotation(),settingsManager.getSideBet1Arrow().getTextureRegion());
         batcher.drawSprite(settingsManager.getSideBet2Arrow(),settingsManager.getSideBet2Arrow().getRotation(),settingsManager.getSideBet2Arrow().getTextureRegion());
         batcher.endBatch();
+
+        //Side Bets name
+        CalibriFont.drawNumbers(gameManager.getSideBetLeft().getName()+"",682,264,1,1,1,1,.4f,.4f,batcher,glGraphics);
+        CalibriFont.drawNumbers(gameManager.getSideBetRight().getName()+"",682,170,1,1,1,1,.4f,.4f,batcher,glGraphics);
+
         //Exit Button
 
         renderPressedButton(Assets.buttons,settingsManager.getExitSettings());
@@ -659,7 +737,7 @@ public class GameRenderer implements Serializable{
         }
 
         batcher.beginBatch(Assets.buttons);
-        batcher.drawSprite(chipManager.getFreeChips().getXPos(), chipManager.getFreeChips().getYPos(), chipManager.getFreeChips().getWidth(), chipManager.getFreeChips().getHeight(), chipManager.getFreeChips().getTextureRegion());
+        batcher.drawSprite(chipManager.getFreeChips(), chipManager.getFreeChips().getTextureRegion());
         batcher.endBatch();
 
         if (gameManager.playerCards.size() != 0 && state != 1 && state!=3) {
@@ -676,7 +754,7 @@ public class GameRenderer implements Serializable{
             }
 
             batcher.beginBatch(Assets.buttons);
-            batcher.drawSprite(chipManager.getPreviousArrow().getXPos(), chipManager.getPreviousArrow().getYPos(), chipManager.getPreviousArrow().getWidth()*.5f, chipManager.getPreviousArrow().getHeight()*.5f, chipManager.getPreviousArrow().getRotation(), chipManager.getPreviousArrow().getTextureRegion());
+            batcher.drawSprite(chipManager.getPreviousArrow().getXPos(), chipManager.getPreviousArrow().getYPos(), chipManager.getPreviousArrow().getWidth(), chipManager.getPreviousArrow().getHeight(), chipManager.getPreviousArrow().getRotation(), chipManager.getPreviousArrow().getTextureRegion());
             batcher.endBatch();
             glGraphics.getGl().glColor4f(1,1,1,bettingAlphas);
         }
@@ -907,17 +985,17 @@ public class GameRenderer implements Serializable{
         batcher.endBatch();
 
 
-        if(state==2 && gameManager.getOldSideBetLeft()!=null) {
+        if(state==2) {
             gameManager.getOldSideBetLeft().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetLeft().getPayout(),gameManager.getOldSideBetLeft().getVersion(),gameManager.getOldSideBetLeft().getPosition());
         }
-        else if(gameManager.getSideBetLeft()!=null)
+        else
             gameManager.getSideBetLeft().drawPayouts(batcher,glGraphics,gameManager.getSideBetLeft().getPayout(),gameManager.getSideBetLeft().getVersion(),gameManager.getSideBetLeft().getPosition());
 
 
-        if(state==2 && gameManager.getOldSideBetRight()!=null) {
+        if(state==2) {
             gameManager.getOldSideBetRight().drawPayouts(batcher, glGraphics, gameManager.getOldSideBetRight().getPayout(),gameManager.getOldSideBetRight().getVersion(),gameManager.getOldSideBetRight().getPosition());
         }
-        else if(gameManager.getSideBetRight()!=null)
+        else
             gameManager.getSideBetRight().drawPayouts(batcher,glGraphics,gameManager.getSideBetRight().getPayout(),gameManager.getSideBetRight().getVersion(),gameManager.getSideBetRight().getPosition());
 
         glGraphics.getGl().glColor4f(1,1,1,1);
@@ -934,6 +1012,20 @@ public class GameRenderer implements Serializable{
         backgroundTextureRegion=tr;
     }
 
+    public void renderEarnChipsTimer(double time) {
+        //6000 seconds is 10 minutes so if current elasped time - time is less than 6000 then display time
+        double timerLeft = SystemClock.elapsedRealtime()/1000-time;
+        if(timerLeft<600) {
+            timerLeft=600-timerLeft;
+            String minutes=(int)timerLeft/60+"";
+            String seconds=(int)timerLeft%60+"";
+            if(seconds.length()==1) {
+                seconds="0"+seconds;
+            }
+
+            CalibriFont.drawNumbersBackwardsAndEqualDistance(minutes+":"+seconds,gameManager.earnChips.getXPos()+430,1416,1,1,1,1,.6f,.6f,batcher,glGraphics);
+        }
+    }
 
     private TextureRegion findSettingsNumber2(char c) {
         TextureRegion r;
@@ -1127,8 +1219,12 @@ public class GameRenderer implements Serializable{
         return r;
     }
 
+    public int getBackgroundId() { return backgroundId;}
 
-    public void loadData(SpriteBatcher batcher, GLGraphics glGraphics, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settingsManager, Camera2D cam) {
+    public void setBackgroundId(int b) { backgroundId=b;}
+
+
+    public void loadData(SpriteBatcher batcher, GLGraphics glGraphics, GameManager gameManager, ChipManager chipManager, SlotMachine slotMachine, SettingsManager settingsManager,StatisticsManager statisticsManager, Camera2D cam) {
 
         this.batcher=batcher;
         this.glGraphics=glGraphics;
@@ -1136,7 +1232,27 @@ public class GameRenderer implements Serializable{
         this.chipManager=chipManager;
         this.slotMachine=slotMachine;
         this.settingsManager=settingsManager;
+        this.statisticsManager=statisticsManager;
         this.cam=cam;
+
+        switch(backgroundId) {
+            case 1:
+                backgroundTexture=Assets.greenBackground;
+                backgroundTextureRegion=Assets.green;
+                break;
+            case 2:
+                backgroundTexture=Assets.blueBackground;
+                backgroundTextureRegion=Assets.blue;
+                break;
+            case 3:
+                backgroundTexture=Assets.redBackground;
+                backgroundTextureRegion=Assets.red;
+                break;
+            default:
+                backgroundTexture=Assets.purpleBackground;
+                backgroundTextureRegion=Assets.purple;
+                break;
+        }
     }
 
 

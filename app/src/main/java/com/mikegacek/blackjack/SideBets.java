@@ -27,11 +27,21 @@ public interface SideBets{
 
     public int getVersion();
 
+    public int getBet();
+
     public void setVersion(int v);
 
     public void setPayout(int payout);
 
     public void setPosition(int position);
+
+    public void setBet(int bet);
+
+    public String getName();
+
+    public void updateName();
+
+    public int getId();
 
     public void load();
 }

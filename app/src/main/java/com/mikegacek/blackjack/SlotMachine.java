@@ -13,11 +13,11 @@ import java.io.Serializable;
 
 public class SlotMachine implements Serializable {
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 16L;
 
     private transient GLGraphics glGraphics;
     private transient SpriteBatcher batcher;
-    private ChipManager chipManager;
+    private transient ChipManager chipManager;
 
     private float oldNumbersYLoc,numbersYLoc;
     private float spinSpeed;
@@ -42,7 +42,7 @@ public class SlotMachine implements Serializable {
         spinSpeed=2;
         buttonPressed=false;
         hold=0;
-        slotArmHeight=144;
+        slotArmHeight=288;
         slotArrowWaitTime=0;
         touched=false;
         slotMachineHandle=new Circle(455,600+slotArmHeight,56);
@@ -66,10 +66,10 @@ public class SlotMachine implements Serializable {
         glGraphics.getGl().glBlendFunc( glGraphics.getGl().GL_SRC_COLOR,glGraphics.getGl().GL_DST_ALPHA);
 
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(453,600,46,58,Assets.slotArmConnection);
-        batcher.drawSprite(465,600+slotArmHeight/2+5*(slotArmHeight/144),13,143*(slotArmHeight/144f),Assets.slotArm);
-        batcher.drawSprite(270,600,335,240,Assets.slot);
-        batcher.drawSprite(465,600+slotArmHeight,56,56,Assets.slotHandle);
+        batcher.drawSprite(906,1200,92,116,Assets.slotArmConnection);
+        batcher.drawSprite(930,1200+slotArmHeight/2+5*(slotArmHeight/288),26,286*(slotArmHeight/288f),Assets.slotArm);
+        batcher.drawSprite(540,1200,670,480,Assets.slot);
+        batcher.drawSprite(930,1200+slotArmHeight,112,112,Assets.slotHandle);
         batcher.endBatch();
 
         updateHandle();
@@ -106,7 +106,7 @@ public class SlotMachine implements Serializable {
         glGraphics.getGl().glBlendFunc( glGraphics.getGl().GL_DST_COLOR,glGraphics.getGl().GL_ONE_MINUS_SRC_ALPHA);
         Assets.slotNumbers.changeValues(0,numbersYLoc,225,112);
         batcher.beginBatch(Assets.slotMachineNumbers);
-        batcher.drawSprite(270,600,225,112,Assets.slotNumbers);
+        batcher.drawSprite(540,1200,450,224,Assets.slotNumbers);
         batcher.endBatch();
         glGraphics.getGl().glBlendFunc(glGraphics.getGl().GL_SRC_ALPHA, glGraphics.getGl().GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -152,8 +152,8 @@ public class SlotMachine implements Serializable {
         }
 
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(120,600,70,42,-arrowRotation,Assets.rightArrow);
-        batcher.drawSprite(420,600,70,42,arrowRotation,Assets.leftArrow);
+        batcher.drawSprite(240,1200,140,82,-arrowRotation,Assets.rightArrow);
+        batcher.drawSprite(840,1200,140,82,arrowRotation,Assets.leftArrow);
         batcher.endBatch();
     }
 
@@ -168,28 +168,28 @@ public class SlotMachine implements Serializable {
         if(slotArrowWaitTime<40)
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(500,650,36,22,Assets.arrowEnd);
+        batcher.drawSprite(1000,1300,72,44,Assets.arrowEnd);
         batcher.endBatch();
 
         if(slotArrowWaitTime<60)
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
 
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(500,622,36,22,Assets.arrowEnd);
+        batcher.drawSprite(1000,1244,72,44,Assets.arrowEnd);
         batcher.endBatch();
 
         if(slotArrowWaitTime<80)
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
 
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(500,594,36,22,Assets.arrowEnd);
+        batcher.drawSprite(1000,1188,72,44,Assets.arrowEnd);
         batcher.endBatch();
 
         if(slotArrowWaitTime<100)
             glGraphics.getGl().glColor4f(.5f,.5f,.5f,1);
 
         batcher.beginBatch(Assets.slotMachine);
-        batcher.drawSprite(500,540,64,71,Assets.arrow);
+        batcher.drawSprite(1000,1080,128,142,Assets.arrow);
         batcher.endBatch();
 
         glGraphics.getGl().glColor4f(1,1,1,1);
@@ -205,25 +205,25 @@ public class SlotMachine implements Serializable {
 
     public void setSlotArmHeight(float height) {
         if(touched==true) {
-            if (height < 456) {
-                height = 456;
+            if (height < 912) {
+                height = 912;
                 touched = false;
-            } else if (height > 744)
-                height = 744;
+            } else if (height > 1488)
+                height = 1488;
             else
-                slotArmHeight = height - 600;
-            slotMachineHandle.setCirclePos(455, height);
+                slotArmHeight = height - 1200;
+            slotMachineHandle.setCirclePos(910, height);
         }
     }
 
     public void updateHandle() {
-        if((slotArmHeight<144 && touched==false)) {
-            slotArmHeight+=20;
-            if(slotArmHeight>144)
-                slotArmHeight=144;
-            slotMachineHandle.setCirclePos(455,slotArmHeight+600);
+        if((slotArmHeight<288 && touched==false)) {
+            slotArmHeight+=40;
+            if(slotArmHeight>288)
+                slotArmHeight=288;
+            slotMachineHandle.setCirclePos(910,slotArmHeight+1200);
         }
-        if(((slotArmHeight<0 && touched==false) || slotArmHeight<=-144) && buttonPressed==false)
+        if(((slotArmHeight<0 && touched==false) || slotArmHeight<=-288) && buttonPressed==false)
             pressButton();
     }
 

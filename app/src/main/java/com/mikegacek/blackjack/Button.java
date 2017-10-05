@@ -96,23 +96,6 @@ public class Button extends Rectangle{
 
     public TextureRegion getTextureRegion() { return textureRegion;}
 
-    public void loadTexture(int id) {
-        switch(id) {
-            case 1:
-                textureRegion=Assets.settingsButton;
-                break;
-            case 2:
-                textureRegion=Assets.rulesButton;
-                break;
-            case 3:
-                textureRegion=Assets.freeChipsButton;
-                break;
-            case 4:
-                textureRegion=Assets.soundOnButton;
-                break;
-        }
-    }
-
     public boolean getOn() { return on;}
 
     public void setPos(float x, float y) {
